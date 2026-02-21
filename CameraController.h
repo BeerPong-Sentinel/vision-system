@@ -17,6 +17,10 @@
 #include <QtGui/QImage>
 #include <Spinnaker.h>
 #include <SpinGenApi/SpinnakerGenApi.h>
+#include <string>
+
+inline const std::string CAM2DEVICEID = "24292737";
+inline const std::string CAM1DEVICEID = "24292752";
 
 class CameraController : public QObject {
   Q_OBJECT 
@@ -28,7 +32,7 @@ public:
   void stopCamera();
 
 signals:
-    void newFrame(const QImage& frame);
+    void newFrame(const QImage& frame1, const QImage& frame2);
   
 private slots:
   void acquireFrame();
@@ -37,5 +41,6 @@ private:
   Spinnaker::SystemPtr system;
   Spinnaker::CameraList camList;
   Spinnaker::CameraPtr cam1;
+  Spinnaker::CameraPtr cam2;
   QTimer* timer;
 };

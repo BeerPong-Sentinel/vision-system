@@ -14,13 +14,64 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <widget class="QComboBox" name="imagedisptype">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>131</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="placeholderText">
+     <string>Image Type</string>
+    </property>
+    <item>
+     <property name="text">
+      <string>Raw</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Thresholded</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Bounding Box</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QSplitter" name="splitter_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>380</y>
+      <width>771</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Orientation::Horizontal</enum>
+    </property>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>FPS:</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>FPS:</string>
+     </property>
+    </widget>
+   </widget>
    <widget class="QSplitter" name="splitter">
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>60</y>
-      <width>631</width>
-      <height>231</height>
+      <y>80</y>
+      <width>771</width>
+      <height>281</height>
      </rect>
     </property>
     <property name="orientation">
@@ -28,12 +79,12 @@
     </property>
     <widget class="QLabel" name="camera1">
      <property name="text">
-      <string>Primary Camera Feed</string>
+      <string>TextLabel</string>
      </property>
     </widget>
     <widget class="QLabel" name="camera2">
      <property name="text">
-      <string>Secondary Camera Feed</string>
+      <string>TextLabel</string>
      </property>
     </widget>
    </widget>

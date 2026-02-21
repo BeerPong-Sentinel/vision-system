@@ -15,7 +15,7 @@ public:
   ~MainWindow();
 
 private slots:
-  void updateCamera1Display(const QImage& image);
+  void updateCameraDisplay(const QImage& image1, const QImage& image2);
 
 private:
   Ui::MainWindow *ui;

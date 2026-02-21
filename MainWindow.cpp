@@ -11,7 +11,7 @@ MainWindow::MainWindow(QWidget *parent)
     
     qDebug() << "Connecting Labels";
     cameras = new CameraController(this);
-    connect(cameras, &CameraController::newFrame, this, &MainWindow::updateCamera1Display);
+    connect(cameras, &CameraController::newFrame, this, &MainWindow::updateCameraDisplay);
 
     qDebug() << "Starting Cameras";
 
@@ -22,7 +22,8 @@ MainWindow::~MainWindow() {
 
 }
 
-void MainWindow::updateCamera1Display(const QImage& image)
+void MainWindow::updateCameraDisplay(const QImage& image1, const QImage& image2)
 {
-    ui->camera1->setPixmap(QPixmap::fromImage(image).scaled(ui->camera1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    ui->camera1->setPixmap(QPixmap::fromImage(image1).scaled(ui->camera1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    ui->camera2->setPixmap(QPixmap::fromImage(image2).scaled(ui->camera2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
