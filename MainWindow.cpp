@@ -24,6 +24,5 @@ MainWindow::~MainWindow() {
 
 void MainWindow::updateCamera1Display(const QImage& image)
 {
-    ui->camera1->setPixmap(QPixmap::fromImage(image));
+    ui->camera1->setPixmap(QPixmap::fromImage(image).scaled(ui->camera1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
-
