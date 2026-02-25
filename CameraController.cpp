@@ -1,6 +1,5 @@
 #include "CameraController.h"
 #include <QtCore/QDebug>
-#include <opencv2/opencv.hpp>
 
 CameraController::CameraController(QObject* parent) : QObject(parent), timer(new QTimer(this)) {
   connect(timer, &QTimer::timeout, this, &CameraController::acquireFrame);
@@ -24,7 +23,6 @@ void CameraController::startCamera() {
     if (numCameras == 0)
     {
         qCritical() << "Not enough cameras!";
-        return;
     }
     
     cam1 = camList.GetBySerial(CAM1DEVICEID);
@@ -63,16 +61,16 @@ void CameraController::stopCamera() {
 }
 
 void CameraController::acquireFrame() {
-  const int width = 720;  
-  const int height = 540; 
+  const int image_width = 720;  
+  const int image_height = 540; 
 
-  // Default black images
-  QImage qimg1(width, height, QImage::Format_RGB888);
-  QImage qimg2(width, height, QImage::Format_RGB888);
-  qimg1.fill(Qt::black);
-  qimg2.fill(Qt::black);
+  // Initialize Default Image (If No Camera Present)
+  cv::Mat frame1(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
+  cv::Mat frame2(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
 
   if (cam1) {
+
+    // Acquire Image
     Spinnaker::ImageProcessor processor;
     Spinnaker::ImagePtr cam1frame = cam1->GetNextImage(1000);
 
@@ -81,23 +79,16 @@ void CameraController::acquireFrame() {
     } else {
       Spinnaker::ImagePtr convertedImage = processor.Convert(cam1frame, Spinnaker::PixelFormat_RGB8);
 
-      int width  = static_cast<int>(convertedImage->GetWidth());
-      int height = static_cast<int>(convertedImage->GetHeight());
-      int stride = static_cast<int>(convertedImage->GetStride());
-
-      uchar* data = static_cast<uchar*>(convertedImage->GetData());
-
-      QImage tmp(
-          data,
-          width,
-          height,
-          stride,
-          QImage::Format_RGB888
+      cv::Mat tmp(
+          convertedImage->GetHeight(),
+          convertedImage->GetWidth(),
+          CV_8UC3,
+          convertedImage->GetData()
       );
-      qimg1 = tmp.copy(); 
-      cam1frame->Release();
+        frame1 = tmp;
+        cam1frame->Release();
+      }
     }
-  }
 
   if (cam2) {
     Spinnaker::ImageProcessor processor;
@@ -107,23 +98,18 @@ void CameraController::acquireFrame() {
       qDebug() << "Image2 Incomplete: " << Spinnaker::Image::GetImageStatusDescription(cam2frame->GetImageStatus());
     } else {
       Spinnaker::ImagePtr convertedImage = processor.Convert(cam2frame, Spinnaker::PixelFormat_RGB8);
-      int width  = static_cast<int>(convertedImage->GetWidth());
-      int height = static_cast<int>(convertedImage->GetHeight());
-      int stride = static_cast<int>(convertedImage->GetStride());
 
-      uchar* data = static_cast<uchar*>(convertedImage->GetData());
-
-      QImage tmp(
-          data,
-          width,
-          height,
-          stride,
-          QImage::Format_RGB888
+      cv::Mat tmp(
+          convertedImage->GetHeight(),
+          convertedImage->GetWidth(),
+          CV_8UC3,
+          convertedImage->GetData()
       );
-      qimg2 = tmp.copy(); 
+        frame2 = tmp;
+        cam2frame->Release();
+      }
       cam2frame->Release();
     }
-  }
-
-  emit newFrame(qimg1.copy(), qimg2.copy());
+  emit newFrame(frame1.clone(), frame2.clone());
 }
+

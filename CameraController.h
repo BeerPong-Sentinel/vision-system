@@ -12,11 +12,14 @@
 #include "Spinnaker.h"
 #include <SpinGenApi/SpinnakerGenApi.h>
 
+#include "CameraParams.h"
+
 #include <QtCore/QThread>
 #include <QTimer>
 #include <QtGui/QImage>
 #include <Spinnaker.h>
 #include <SpinGenApi/SpinnakerGenApi.h>
+#include <opencv2/opencv.hpp>
 #include <string>
 
 inline const std::string CAM2DEVICEID = "24292737";
@@ -32,7 +35,7 @@ public:
   void stopCamera();
 
 signals:
-    void newFrame(const QImage& frame1, const QImage& frame2);
+    void newFrame(const cv::Mat frame1, const cv::Mat frame2);
   
 private slots:
   void acquireFrame();
