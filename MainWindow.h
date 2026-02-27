@@ -1,7 +1,11 @@
 #pragma once
 #include <QMainWindow>
-#include "CameraController.h"
 #include <opencv2/opencv.hpp>
+
+// Import Qt Nodes
+#include "CameraController.h"
+#include "ImageProcessing.h"
+#include "CameraParams.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -16,9 +20,11 @@ public:
   ~MainWindow();
 
 private slots:
-  void updateCameraDisplay(const cv::Mat frame1, const cv::Mat frame2);
+  void updateCameraDisplay(const Frame& frame1, const Frame& frame2);
 
 private:
   Ui::MainWindow *ui;
   CameraController* cameras;
+  ImageProcessor* imageProcessor;
+
 };

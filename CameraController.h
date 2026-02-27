@@ -35,7 +35,7 @@ public:
   void stopCamera();
 
 signals:
-    void newFrame(const cv::Mat frame1, const cv::Mat frame2);
+    void newFrame(const Frame& frame1, const Frame& frame2);
   
 private slots:
   void acquireFrame();

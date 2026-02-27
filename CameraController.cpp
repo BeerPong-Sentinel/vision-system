@@ -47,7 +47,6 @@ void CameraController::startCamera() {
 }
 
 void CameraController::stopCamera() {
-
   if (cam1 && cam1->IsStreaming()) cam1->EndAcquisition();
   if (cam1 && cam1->IsInitialized()) cam1->DeInit();
 
@@ -56,6 +55,7 @@ void CameraController::stopCamera() {
 
   cam1 = nullptr;
   cam2 = nullptr;
+
   camList.Clear();
   system->ReleaseInstance();
 }
@@ -64,9 +64,12 @@ void CameraController::acquireFrame() {
   const int image_width = 720;  
   const int image_height = 540; 
 
+  Frame frame1;
+  Frame frame2;
+
   // Initialize Default Image (If No Camera Present)
-  cv::Mat frame1(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
-  cv::Mat frame2(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
+  frame1.raw = cv::Mat(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
+  frame2.raw = cv::Mat(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
 
   if (cam1) {
 
@@ -85,8 +88,8 @@ void CameraController::acquireFrame() {
           CV_8UC3,
           convertedImage->GetData()
       );
-        frame1 = tmp;
-        cam1frame->Release();
+        frame1.raw = tmp;
+        cam1frame->Release(); 
       }
     }
 
@@ -105,11 +108,11 @@ void CameraController::acquireFrame() {
           CV_8UC3,
           convertedImage->GetData()
       );
-        frame2 = tmp;
+        frame2.raw = tmp;
         cam2frame->Release();
       }
       cam2frame->Release();
     }
-  emit newFrame(frame1.clone(), frame2.clone());
+  emit newFrame(frame1, frame2);
 }
 
