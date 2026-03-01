@@ -35,16 +35,19 @@ void MainWindow::updateCameraDisplay(const Frame& frame1, const Frame& frame2)
 
     // Decide Which Image to Display
     if (index == 0) { // Raw Case
-      qimg1 = QImage(frame1.raw.data, frame1.raw.cols, frame1.raw.rows, static_cast<int>(frame1.raw.step), QImage::Format_RGB888);
-      qimg2 = QImage(frame2.raw.data, frame2.raw.cols, frame2.raw.rows, static_cast<int>(frame2.raw.step), QImage::Format_RGB888);
+      qimg1 = QImage(frame1.raw.data, frame1.raw.cols, frame1.raw.rows, static_cast<int>(frame1.raw.step), QImage::Format_RGB888).copy();
+      qimg2 = QImage(frame2.raw.data, frame2.raw.cols, frame2.raw.rows, static_cast<int>(frame2.raw.step), QImage::Format_RGB888).copy();
     } else if (index == 1) { // Threshold Case
-      qimg1 = QImage(frame1.thresh.data, frame1.thresh.cols, frame1.thresh.rows, static_cast<int>(frame1.thresh.step), QImage::Format_Grayscale8);
-      qimg2 = QImage(frame2.thresh.data, frame2.thresh.cols, frame2.thresh.rows, static_cast<int>(frame2.thresh.step), QImage::Format_Grayscale8);
+      qimg1 = QImage(frame1.thresh.data, frame1.thresh.cols, frame1.thresh.rows, static_cast<int>(frame1.thresh.step), QImage::Format_Grayscale8).copy();
+      qimg2 = QImage(frame2.thresh.data, frame2.thresh.cols, frame2.thresh.rows, static_cast<int>(frame2.thresh.step), QImage::Format_Grayscale8).copy();
     } else {
 
     }
-
-      ui->camera1->setPixmap(QPixmap::fromImage(qimg1).scaled(ui->camera1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-      ui->camera2->setPixmap(QPixmap::fromImage(qimg2).scaled(ui->camera2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    
+    // Convert images to QPixmap and send to QLabel
+    ui->camera1->setPixmap(QPixmap::fromImage(qimg1).scaled(ui->camera1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    ui->camera2->setPixmap(QPixmap::fromImage(qimg2).scaled(ui->camera2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
 }
+
+

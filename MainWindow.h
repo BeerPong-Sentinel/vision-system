@@ -26,5 +26,4 @@ private:
   Ui::MainWindow *ui;
   CameraController* cameras;
   ImageProcessor* imageProcessor;
-
 };

@@ -89,10 +89,12 @@ void CameraController::acquireFrame() {
           convertedImage->GetData()
       );
         frame1.raw = tmp;
-        cam1frame->Release(); 
       }
+      
+      cam1frame->Release();
     }
 
+  
   if (cam2) {
     Spinnaker::ImageProcessor processor;
     Spinnaker::ImagePtr cam2frame = cam2->GetNextImage(1000);
@@ -108,11 +110,11 @@ void CameraController::acquireFrame() {
           CV_8UC3,
           convertedImage->GetData()
       );
-        frame2.raw = tmp;
-        cam2frame->Release();
-      }
-      cam2frame->Release();
+        frame2.raw = tmp.clone();
     }
+    cam2frame->Release();
+  }
+
   emit newFrame(frame1, frame2);
 }
 

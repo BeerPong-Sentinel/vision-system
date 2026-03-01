@@ -96,6 +96,9 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="maximum">
+      <number>255</number>
+     </property>
     </widget>
     <widget class="QSpinBox" name="saurationMin">
      <property name="geometry">
@@ -105,6 +108,9 @@
        <width>36</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="maximum">
+      <number>255</number>
      </property>
     </widget>
    </widget>
@@ -126,6 +132,9 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="maximum">
+      <number>255</number>
+     </property>
     </widget>
     <widget class="QSpinBox" name="valueMin">
      <property name="geometry">
@@ -136,9 +145,12 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="maximum">
+      <number>255</number>
+     </property>
     </widget>
    </widget>
-   <widget class="QWidget" name="" native="true">
+   <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -171,7 +183,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="" native="true">
+   <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
       <x>120</x>
@@ -197,7 +209,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="" native="true">
+   <widget class="QWidget" name="widget" native="true">
     <property name="geometry">
      <rect>
       <x>120</x>
@@ -215,6 +227,9 @@
        <height>21</height>
       </rect>
      </property>
+     <property name="maximum">
+      <number>179</number>
+     </property>
     </widget>
     <widget class="QSpinBox" name="hueMin">
      <property name="geometry">
@@ -224,6 +239,9 @@
        <width>36</width>
        <height>21</height>
       </rect>
+     </property>
+     <property name="maximum">
+      <number>179</number>
      </property>
     </widget>
    </widget>
