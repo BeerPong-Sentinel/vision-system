@@ -3,7 +3,7 @@
 // 1. Include the specific file that defines the platform macros first
 #include <SpinnakerPlatform.h>
 
-// 2. Fix the broken macro. 
+// 2. Fix the broken macro.
 // We redefine it to ignore the 'deprecated' attribute and just provide the 'class' keyword.
 #undef SPINNAKER_DEPRECATED_CLASS
 #define SPINNAKER_DEPRECATED_CLASS(msg) SPINNAKER_API class
@@ -24,19 +24,21 @@
 
 inline const std::string CAM2DEVICEID = "24292737";
 inline const std::string CAM1DEVICEID = "24292752";
+inline const int WEBCAM_INDEX = 0;
 
-class CameraController : public QObject {
-  Q_OBJECT 
+class CameraController : public QObject
+{
+  Q_OBJECT
 public:
-  CameraController(QObject* parent = nullptr);
+  CameraController(QObject *parent = nullptr);
   ~CameraController();
 
   void startCamera();
   void stopCamera();
 
 signals:
-    void newFrame(const Frame& frame1, const Frame& frame2);
-  
+  void newFrame(const Frame &frame1, const Frame &frame2, const Frame &frame3);
+
 private slots:
   void acquireFrame();
 
@@ -45,5 +47,7 @@ private:
   Spinnaker::CameraList camList;
   Spinnaker::CameraPtr cam1;
   Spinnaker::CameraPtr cam2;
-  QTimer* timer;
+  QTimer *timer;
+  cv::VideoCapture webcam;
+  bool webcamConnected = false;
 };

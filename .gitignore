@@ -8,3 +8,26 @@ CMakeScripts/
 cmake_install.cmake
 Makefile
 install_manifest.txt
+
+# VS Code (machine-specific paths)
+.vscode/
+
+# Qt generated files
+*.autogen/
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# Compiled binaries
+*.exe
+*.dll
+*.obj
+*.pdb
+
+# Visual Studio
+*.suo
+*.user
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user

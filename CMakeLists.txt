@@ -10,26 +10,19 @@ set(SPINNAKER_ROOT "/Applications/Spinnaker/")
 find_path(SPINNAKER_INCLUDE_DIR
     NAMES Spinnaker.h
     PATHS ${SPINNAKER_ROOT}/include
+    NO_DEFAULT_PATH
 )
 
-find_library(SPINNAKER_LIB
-    NAMES Spinnaker
-    PATHS ${SPINNAKER_ROOT}/lib
-)
+set(SPINNAKER_LIB "I:/SoftwareLibraries/SpinnakerSDK/lib64/vs2015/Spinnaker_v140.lib")
 
-find_library(SPINNAKER_GENAPI_LIB 
-    NAMES GenApi_clang140_v3_0 
-    PATHS ${SPINNAKER_ROOT}/lib
-)
-
-find_library(SPINNAKER_GCBASE_LIB 
-    NAMES GCBase_clang140_v3_0 
-    PATHS ${SPINNAKER_ROOT}/lib
-)
+set(SPINNAKER_ROOT "I:/SoftwareLibraries/SpinnakerSDK")
 
 if(NOT SPINNAKER_INCLUDE_DIR OR NOT SPINNAKER_LIB)
-    message(FATAL_ERROR "Spinnaker not found")
+    message(FATAL_EROR "Spinnaker not found")
 endif()
+
+set(OpenCV_DIR "I:/SoftwareLibraries/opencv/build")
+set(CMAKE_PREFIX_PATH "I:/SoftwareLibraries/Qt/6.10.2/msvc2022_64")
 
 find_package( OpenCV REQUIRED )
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
@@ -57,6 +50,4 @@ target_link_libraries(
   ${OpenCV_LIBS}
   Qt6::Widgets
   ${SPINNAKER_LIB}
-  ${SPINNAKER_GENAPI_LIB}
-  ${SPINNAKER_GCBASE_LIB}
 )

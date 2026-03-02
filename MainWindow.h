@@ -8,7 +8,10 @@
 #include "CameraParams.h"
 
 QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
+namespace Ui
+{
+  class MainWindow;
+}
 QT_END_NAMESPACE
 
 class MainWindow : public QMainWindow
@@ -20,10 +23,10 @@ public:
   ~MainWindow();
 
 private slots:
-  void updateCameraDisplay(const Frame& frame1, const Frame& frame2);
+  void updateCameraDisplay(const Frame &frame1, const Frame &frame2, const Frame &frame3);
 
 private:
   Ui::MainWindow *ui;
-  CameraController* cameras;
-  ImageProcessor* imageProcessor;
+  CameraController *cameras;
+  ImageProcessor *imageProcessor;
 };

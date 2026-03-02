@@ -7,47 +7,53 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow)
 {
-    
-    ui->setupUi(this);
-    
-    qDebug() << "Connecting Labels";
 
-    cameras = new CameraController(this);
-    imageProcessor = new ImageProcessor(this);
+  ui->setupUi(this);
 
-    connect(cameras, &CameraController::newFrame, imageProcessor, &ImageProcessor::processFrames);
-    connect(imageProcessor, &ImageProcessor::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
+  qDebug() << "Connecting Labels";
 
-    qDebug() << "Starting Cameras";
+  cameras = new CameraController(this);
+  imageProcessor = new ImageProcessor(this);
 
-    cameras->startCamera(); 
+  connect(cameras, &CameraController::newFrame, imageProcessor, &ImageProcessor::processFrames);
+  connect(imageProcessor, &ImageProcessor::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
+
+  qDebug() << "Starting Cameras";
+
+  cameras->startCamera();
 }
 
-MainWindow::~MainWindow() {
-
-}
-
-void MainWindow::updateCameraDisplay(const Frame& frame1, const Frame& frame2)
+MainWindow::~MainWindow()
 {
-    int index = ui->imagedisptype->currentIndex(); 
-
-    QImage qimg1, qimg2;
-
-    // Decide Which Image to Display
-    if (index == 0) { // Raw Case
-      qimg1 = QImage(frame1.raw.data, frame1.raw.cols, frame1.raw.rows, static_cast<int>(frame1.raw.step), QImage::Format_RGB888).copy();
-      qimg2 = QImage(frame2.raw.data, frame2.raw.cols, frame2.raw.rows, static_cast<int>(frame2.raw.step), QImage::Format_RGB888).copy();
-    } else if (index == 1) { // Threshold Case
-      qimg1 = QImage(frame1.thresh.data, frame1.thresh.cols, frame1.thresh.rows, static_cast<int>(frame1.thresh.step), QImage::Format_Grayscale8).copy();
-      qimg2 = QImage(frame2.thresh.data, frame2.thresh.cols, frame2.thresh.rows, static_cast<int>(frame2.thresh.step), QImage::Format_Grayscale8).copy();
-    } else {
-
-    }
-    
-    // Convert images to QPixmap and send to QLabel
-    ui->camera1->setPixmap(QPixmap::fromImage(qimg1).scaled(ui->camera1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-    ui->camera2->setPixmap(QPixmap::fromImage(qimg2).scaled(ui->camera2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
-
 }
 
+void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2, const Frame &frame3)
+{
+  int index = ui->imagedisptype->currentIndex();
 
+  QImage qimg1, qimg2, qimg3;
+
+  // Decide Which Image to Display
+  if (index == 0)
+  {
+    qimg1 = QImage(frame1.raw.data, frame1.raw.cols, frame1.raw.rows, static_cast<int>(frame1.raw.step), QImage::Format_RGB888).copy();
+    qimg2 = QImage(frame2.raw.data, frame2.raw.cols, frame2.raw.rows, static_cast<int>(frame2.raw.step), QImage::Format_RGB888).copy();
+    qimg3 = QImage(frame3.raw.data, frame3.raw.cols, frame3.raw.rows, static_cast<int>(frame3.raw.step), QImage::Format_BGR888).copy();
+  }
+  else if (index == 1)
+  { // Threshold Case
+    qimg1 = QImage(frame1.thresh.data, frame1.thresh.cols, frame1.thresh.rows, static_cast<int>(frame1.thresh.step), QImage::Format_Grayscale8).copy();
+    qimg2 = QImage(frame2.thresh.data, frame2.thresh.cols, frame2.thresh.rows, static_cast<int>(frame2.thresh.step), QImage::Format_Grayscale8).copy();
+    qimg3 = QImage(frame3.thresh.data, frame3.thresh.cols, frame3.thresh.rows, static_cast<int>(frame3.thresh.step), QImage::Format_Grayscale8).copy();
+  }
+  else if (index == 2)
+  { // Ball detection case
+    qimg1 = QImage(frame1.annotated.data, frame1.annotated.cols, frame1.annotated.rows, static_cast<int>(frame1.annotated.step), QImage::Format_RGB888).copy();
+    qimg2 = QImage(frame2.annotated.data, frame2.annotated.cols, frame2.annotated.rows, static_cast<int>(frame2.annotated.step), QImage::Format_RGB888).copy();
+    qimg3 = QImage(frame3.annotated.data, frame3.annotated.cols, frame3.annotated.rows, static_cast<int>(frame3.annotated.step), QImage::Format_BGR888).copy();
+  }
+
+  // Convert images to QPixmap and send to QLabel
+  ui->camera1->setPixmap(QPixmap::fromImage(qimg3).scaled(ui->camera1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+  ui->camera2->setPixmap(QPixmap::fromImage(qimg2).scaled(ui->camera2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+}
