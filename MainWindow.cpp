@@ -69,6 +69,6 @@ void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2, c
   }
 
   // Convert images to QPixmap and send to QLabel
-  ui->camera1->setPixmap(QPixmap::fromImage(qimg3).scaled(ui->camera1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+  ui->camera1->setPixmap(QPixmap::fromImage(qimg1).scaled(ui->camera1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
   ui->camera2->setPixmap(QPixmap::fromImage(qimg2).scaled(ui->camera2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
