@@ -25,10 +25,10 @@ private:
   int m_hueMin, m_hueMax;
   int m_saturationMin, m_saturationMax;
   int m_valueMin, m_valueMax;
-  int m_greenMargin = 10;
+  int m_greenMargin = 5;
   int m_blueMargin = 50;
-  int m_lowThresh = 170;
-  int m_minSize = 50;
+  int m_lowThresh = 10;
+  int m_minSize = 5;
 
   cv::Mat greenThreshold(cv::Mat raw);
   cv::Mat blueThreshold(cv::Mat raw);

@@ -35,26 +35,30 @@ void ImageProcessor::processFrames(const Frame &frame1, const Frame &frame2, con
 
 cv::Mat ImageProcessor::tennisThreshold(cv::Mat raw)
 {
-    cv::Mat colour_channels[3];
-    cv::Mat gauss;
+    Mat colour_channels[3];
+    Mat gauss;
     GaussianBlur(raw, gauss, Size(7, 7), 0);
+    Mat hsv;
+    hsv = hsvThreshold(gauss);
     split(gauss, colour_channels);
 
     // Green must be dominant over blue and red
-    cv::Mat greaterThanBlue, greaterThanRed, greenDominant;
-    cv::compare(colour_channels[1], colour_channels[0] + m_greenMargin, greaterThanBlue, cv::CMP_GT);
-    cv::compare(colour_channels[1], colour_channels[2] + m_greenMargin, greaterThanRed, cv::CMP_GT);
-    cv::bitwise_and(greaterThanBlue, greaterThanRed, greenDominant);
+    Mat greaterThanBlue, greaterThanRed, greenDominant;
+    compare(colour_channels[1], colour_channels[0] + m_greenMargin, greaterThanBlue, cv::CMP_GT);
+    compare(colour_channels[1], colour_channels[2] + m_greenMargin, greaterThanRed, cv::CMP_GT);
+    bitwise_and(greaterThanBlue, greaterThanRed, greenDominant);
 
     // Blue must be significantly lower than red and green
-    cv::Mat lessThanRed, lessThanGreen, blueLow;
-    cv::compare(colour_channels[0] + m_blueMargin, colour_channels[2], lessThanRed, cv::CMP_LT);
-    cv::compare(colour_channels[0] + m_blueMargin, colour_channels[1], lessThanGreen, cv::CMP_LT);
-    cv::bitwise_and(lessThanRed, lessThanGreen, blueLow);
+    Mat lessThanRed, lessThanGreen, blueLow;
+    compare(colour_channels[0] + m_blueMargin, colour_channels[2], lessThanRed, cv::CMP_LT);
+    compare(colour_channels[0] + m_blueMargin, colour_channels[1], lessThanGreen, cv::CMP_LT);
+    bitwise_and(lessThanRed, lessThanGreen, blueLow);
+
 
     // Only keep pixels where both agree
-    cv::Mat result;
-    cv::bitwise_and(greenDominant, blueLow, result);
+    Mat result;
+    bitwise_and(greenDominant, blueLow, result);
+    bitwise_and(result, hsv, result);
     return result;
 }
 
@@ -64,8 +68,8 @@ cv::Mat ImageProcessor::hsvThreshold(cv::Mat raw)
     cvtColor(raw, hsv_image, COLOR_BGR2HSV);
     GaussianBlur(hsv_image, hsv_img_gauss, cv::Size(5, 5), 0);
 
-    Scalar lower_bound = Scalar(m_hueMin, m_saturationMin, m_valueMin);
-    Scalar upper_bound = Scalar(m_hueMax, m_saturationMax, m_valueMax);
+    Scalar lower_bound = Scalar(20, 40, 10);
+    Scalar upper_bound = Scalar(100, 255, 255);
 
     Mat masked;
     inRange(hsv_img_gauss, lower_bound, upper_bound, masked);
@@ -101,14 +105,15 @@ cv::Point2f ImageProcessor::detectBall(cv::Mat raw, cv::Mat thresh, bool &hasBal
     float ratio = ellipse.size.width / ellipse.size.height;
     if (ratio > 1.0f)
         ratio = 1.0f / ratio;
+    /*
     if (ratio < 0.60f)
         return cv::Point2f(-1, -1);
-
+    */
     cv::minEnclosingCircle(contours[bestIdx], center, radius);
     if (radius * 2 < m_minSize)
         return cv::Point2f(-1, -1);
     hasBall = true;
-    cv::circle(annotated, center, radius, cv::Scalar(0, 255, 0), 2);
+    cv::circle(annotated, center, radius, cv::Scalar(255, 0, 255), 2);
     return center;
 }
 
