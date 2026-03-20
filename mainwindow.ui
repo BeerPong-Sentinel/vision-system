@@ -187,9 +187,9 @@
     <property name="geometry">
      <rect>
       <x>120</x>
-      <y>420</y>
+      <y>410</y>
       <width>81</width>
-      <height>21</height>
+      <height>31</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
@@ -245,6 +245,124 @@
      </property>
     </widget>
    </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>288</x>
+      <y>450</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>GreenMargin</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>278</x>
+      <y>470</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Lower Thresh</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="margin_val">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>440</y>
+      <width>101</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="low_thresh_val">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>470</y>
+      <width>101</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="min_size_val">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>500</y>
+      <width>101</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>500</y>
+      <width>49</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Min Size</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>440</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Current Size</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="size_label">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>460</y>
+      <width>49</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="margin_val_2">
+    <property name="geometry">
+     <rect>
+      <x>372</x>
+      <y>520</y>
+      <width>101</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_10">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>520</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>BlueMargin</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -252,7 +370,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

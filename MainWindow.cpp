@@ -17,7 +17,14 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(cameras, &CameraController::newFrame, imageProcessor, &ImageProcessor::processFrames);
   connect(imageProcessor, &ImageProcessor::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
-
+  connect(ui->margin_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
+          { imageProcessor->updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
+  connect(ui->low_thresh_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
+          { imageProcessor->updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
+  connect(ui->min_size_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
+          {imageProcessor->updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
+  connect(ui->margin_val_2, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
+          { imageProcessor->updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
   qDebug() << "Starting Cameras";
 
   cameras->startCamera();
@@ -51,6 +58,14 @@ void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2, c
     qimg1 = QImage(frame1.annotated.data, frame1.annotated.cols, frame1.annotated.rows, static_cast<int>(frame1.annotated.step), QImage::Format_RGB888).copy();
     qimg2 = QImage(frame2.annotated.data, frame2.annotated.cols, frame2.annotated.rows, static_cast<int>(frame2.annotated.step), QImage::Format_RGB888).copy();
     qimg3 = QImage(frame3.annotated.data, frame3.annotated.cols, frame3.annotated.rows, static_cast<int>(frame3.annotated.step), QImage::Format_BGR888).copy();
+    if (frame1.hasBall)
+    {
+      ui->size_label->setText(QString::number(frame1.ballRadius * 2, 'f', 1));
+    }
+    else
+    {
+      ui->size_label->setText("--");
+    }
   }
 
   // Convert images to QPixmap and send to QLabel
