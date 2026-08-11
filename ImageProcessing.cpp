@@ -23,20 +23,11 @@ void ImageProcessor::processFrames(const Frame &frame1, const Frame &frame2)
     processed1.raw = frame1.raw.clone();
     processed2.raw = frame2.raw.clone();
 
-<<<<<<< Updated upstream
     processed1.thresh = tennisThreshold(processed1.raw);
     processed2.thresh = tennisThreshold(processed2.raw);
-    processed3.thresh = tennisThreshold(processed3.raw);
-
-=======
-    Mat thresh1, thresh2;
-
-    processed1.thresh = greenThreshold(processed1.raw);
-    processed2.thresh = greenThreshold(processed2.raw);
 
     // processed1.thresh = hsvThreshold(processed1.raw);
     // processed2.thresh = hsvThreshold(processed2.raw);
->>>>>>> Stashed changes
     detectBall(processed1.raw, processed1.thresh, processed1.hasBall, processed1.ballCenter, processed1.ballRadius, processed1.annotated);
     detectBall(processed2.raw, processed2.thresh, processed2.hasBall, processed2.ballCenter, processed2.ballRadius, processed2.annotated);
     emit newProcessedFrame(processed1, processed2);

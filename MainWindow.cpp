@@ -53,10 +53,7 @@ void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2)
   }
   else if (index == 2)
   { // Ball detection case
-    qimg1 = QImage(frame1.annotated.data, frame1.annotated.cols, frame1.annotated.rows, static_cast<int>(frame1.annotated.step), QImage::Format_RGB888).copy();
     qimg2 = QImage(frame2.annotated.data, frame2.annotated.cols, frame2.annotated.rows, static_cast<int>(frame2.annotated.step), QImage::Format_RGB888).copy();
-<<<<<<< Updated upstream
-    qimg3 = QImage(frame3.annotated.data, frame3.annotated.cols, frame3.annotated.rows, static_cast<int>(frame3.annotated.step), QImage::Format_BGR888).copy();
     if (frame1.hasBall)
     {
       ui->size_label->setText(QString::number(frame1.ballRadius * 2, 'f', 1));
@@ -65,8 +62,6 @@ void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2)
     {
       ui->size_label->setText("--");
     }
-=======
->>>>>>> Stashed changes
   }
 
   // Convert images to QPixmap and send to QLabel
