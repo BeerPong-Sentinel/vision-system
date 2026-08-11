@@ -2,6 +2,7 @@
 
 #include <opencv2/opencv.hpp>
 #include <chrono>
+#include <string>
 
 // Frame object holds all relevant data for each image.
 // As it passes through the pipeline, it will be filled out
@@ -17,4 +18,9 @@ struct Frame
   cv::Point2f ballCenter;
   float ballRadius = 0;
   bool hasBall = false;
+};
+
+struct CameraDetails {
+  std::string name;
+  std::string deviceID;
 };

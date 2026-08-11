@@ -22,9 +22,9 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 
-inline const std::string CAM2DEVICEID = "24292737";
-inline const std::string CAM1DEVICEID = "24292752";
-inline const int WEBCAM_INDEX = 0;
+inline const CameraDetails kCam1 = {"Camera 1", "24292737"};
+inline const CameraDetails kCam2 = {"Camera 2", "25376121"}; // Badminton Bot Team's Camera Id
+// inline const Camera kCam2 = {"Camera 2", "24292752"}; 
 
 class CameraController : public QObject
 {
@@ -37,7 +37,7 @@ public:
   void stopCamera();
 
 signals:
-  void newFrame(const Frame &frame1, const Frame &frame2, const Frame &frame3);
+  void newFrame(const Frame &frame1, const Frame &frame2);
 
 private slots:
   void acquireFrame();
@@ -48,6 +48,4 @@ private:
   Spinnaker::CameraPtr cam1;
   Spinnaker::CameraPtr cam2;
   QTimer *timer;
-  cv::VideoCapture webcam;
-  bool webcamConnected = false;
 };

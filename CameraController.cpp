@@ -1,6 +1,36 @@
 #include "CameraController.h"
 #include <QtCore/QDebug>
 
+namespace {
+  void InitializeCam(Spinnaker::CameraPtr& cam, CameraDetails kCam, const Spinnaker::CameraList& camList) {
+    cam= camList.GetBySerial(kCam.deviceID);
+
+    if (cam)
+    {
+      cam->Init();
+
+      Spinnaker::GenApi::INodeMap& sNodeMap = cam->GetTLStreamNodeMap();
+
+      Spinnaker::GenApi::CEnumerationPtr ptrHandlingMode = sNodeMap.GetNode("StreamBufferHandlingMode");
+      if (IsAvailable(ptrHandlingMode) && IsWritable(ptrHandlingMode))
+      {
+          Spinnaker::GenApi::CEnumEntryPtr ptrHandlingModeEntry = ptrHandlingMode->GetEntryByName("NewestOnly");
+          if (IsAvailable(ptrHandlingModeEntry) && IsReadable(ptrHandlingModeEntry))
+          {
+              ptrHandlingMode->SetIntValue(ptrHandlingModeEntry->GetValue());
+          }
+      }
+      cam->BeginAcquisition();
+
+      qDebug() << "Successfully Initialized" << kCam.name;
+    }
+    else
+    {
+      qDebug() << "Could Not Connect to " << kCam.name;
+    }
+  }
+}
+
 CameraController::CameraController(QObject *parent) : QObject(parent), timer(new QTimer(this))
 {
   connect(timer, &QTimer::timeout, this, &CameraController::acquireFrame);
@@ -27,42 +57,11 @@ void CameraController::startCamera()
   {
     qCritical() << "Not enough cameras!";
   }
+  
+  InitializeCam(cam1, kCam1, camList);
+  InitializeCam(cam2, kCam2, camList);
 
-  cam1 = camList.GetBySerial(CAM1DEVICEID);
-  cam2 = camList.GetBySerial(CAM2DEVICEID);
-  webcamConnected = webcam.open(WEBCAM_INDEX);
-
-  if (cam1)
-  {
-    cam1->Init();
-    cam1->BeginAcquisition();
-  }
-  else
-  {
-    qDebug() << "Could Not Connect to Camera 1";
-  }
-
-  if (cam2)
-  {
-    cam2->Init();
-    cam2->BeginAcquisition();
-  }
-  else
-  {
-    qDebug() << "Could Not Connect to Camera 2";
-  }
-
-  if (webcamConnected)
-  {
-    qDebug() << "Webcam connected";
-  }
-  else
-  {
-    qDebug() << "Could not connect to webcam";
-  }
-
-  // qDebug() << "Camera Id" << QString::fromStdString(cam1->DeviceID().c_str());
-  timer->start(5);
+  timer->start(1);
 }
 
 void CameraController::stopCamera()
@@ -76,13 +75,10 @@ void CameraController::stopCamera()
     cam2->EndAcquisition();
   if (cam2 && cam2->IsInitialized())
     cam2->DeInit();
-  if (webcamConnected)
-    webcam.release();
 
   cam1 = nullptr;
   cam2 = nullptr;
 
-  camList.Clear();
   system->ReleaseInstance();
 }
 
@@ -93,7 +89,6 @@ void CameraController::acquireFrame()
 
   Frame frame1;
   Frame frame2;
-  Frame frame3;
 
   // Initialize Default Image (If No Camera Present)
   frame1.raw = cv::Mat(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -148,18 +143,5 @@ void CameraController::acquireFrame()
     cam2frame->Release();
   }
 
-  frame3.raw = cv::Mat(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
-  if (webcamConnected)
-  {
-    cv::Mat tmp;
-    webcam >> tmp;
-    if (!tmp.empty())
-    {
-      cv::resize(tmp, tmp, cv::Size(image_width, image_height));
-
-      frame3.raw = tmp.clone();
-    }
-  }
-
-  emit newFrame(frame1, frame2, frame3);
+  emit newFrame(frame1, frame2);
 }

@@ -23,7 +23,7 @@ public:
   ~MainWindow();
 
 private slots:
-  void updateCameraDisplay(const Frame &frame1, const Frame &frame2, const Frame &frame3);
+  void updateCameraDisplay(const Frame &frame1, const Frame &frame2);
 
 private:
   Ui::MainWindow *ui;

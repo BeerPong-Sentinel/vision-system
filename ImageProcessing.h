@@ -12,10 +12,10 @@ public:
   ~ImageProcessor();
 
 signals:
-  void newProcessedFrame(const Frame &frame1, const Frame &frame2, const Frame &frame3);
+  void newProcessedFrame(const Frame &frame1, const Frame &frame2);
 
 public slots:
-  void processFrames(const Frame &frame1, const Frame &frame2, const Frame &frame3);
+  void processFrames(const Frame &frame1, const Frame &frame2);
   void updateHSVParams(const int h_min, const int h_max, const int s_min, const int s_max, const int v_min, const int v_max);
 
   void updateThreshParams(int margin, int lowThresh, int minSize, int margin_2);

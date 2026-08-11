@@ -1,6 +1,8 @@
 #include "ImageProcessing.h"
 #include "CameraParams.h"
 #include <QtCore/QDebug>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/geometry.hpp>
 
 using namespace cv;
 
@@ -13,24 +15,31 @@ ImageProcessor::~ImageProcessor()
 {
 }
 
-void ImageProcessor::processFrames(const Frame &frame1, const Frame &frame2, const Frame &frame3)
+void ImageProcessor::processFrames(const Frame &frame1, const Frame &frame2)
 {
     Frame processed1;
     Frame processed2;
-    Frame processed3;
 
     processed1.raw = frame1.raw.clone();
     processed2.raw = frame2.raw.clone();
-    processed3.raw = frame3.raw.clone();
 
+<<<<<<< Updated upstream
     processed1.thresh = tennisThreshold(processed1.raw);
     processed2.thresh = tennisThreshold(processed2.raw);
     processed3.thresh = tennisThreshold(processed3.raw);
 
+=======
+    Mat thresh1, thresh2;
+
+    processed1.thresh = greenThreshold(processed1.raw);
+    processed2.thresh = greenThreshold(processed2.raw);
+
+    // processed1.thresh = hsvThreshold(processed1.raw);
+    // processed2.thresh = hsvThreshold(processed2.raw);
+>>>>>>> Stashed changes
     detectBall(processed1.raw, processed1.thresh, processed1.hasBall, processed1.ballCenter, processed1.ballRadius, processed1.annotated);
     detectBall(processed2.raw, processed2.thresh, processed2.hasBall, processed2.ballCenter, processed2.ballRadius, processed2.annotated);
-    detectBall(processed3.raw, processed3.thresh, processed3.hasBall, processed3.ballCenter, processed3.ballRadius, processed3.annotated);
-    emit newProcessedFrame(processed1, processed2, processed3);
+    emit newProcessedFrame(processed1, processed2);
 }
 
 cv::Mat ImageProcessor::tennisThreshold(cv::Mat raw)

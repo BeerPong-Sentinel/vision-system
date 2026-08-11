@@ -34,29 +34,28 @@ MainWindow::~MainWindow()
 {
 }
 
-void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2, const Frame &frame3)
+void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2)
 {
   int index = ui->imagedisptype->currentIndex();
-
-  QImage qimg1, qimg2, qimg3;
+  
+  QImage qimg1, qimg2;
 
   // Decide Which Image to Display
   if (index == 0)
   {
     qimg1 = QImage(frame1.raw.data, frame1.raw.cols, frame1.raw.rows, static_cast<int>(frame1.raw.step), QImage::Format_RGB888).copy();
     qimg2 = QImage(frame2.raw.data, frame2.raw.cols, frame2.raw.rows, static_cast<int>(frame2.raw.step), QImage::Format_RGB888).copy();
-    qimg3 = QImage(frame3.raw.data, frame3.raw.cols, frame3.raw.rows, static_cast<int>(frame3.raw.step), QImage::Format_BGR888).copy();
   }
   else if (index == 1)
   { // Threshold Case
     qimg1 = QImage(frame1.thresh.data, frame1.thresh.cols, frame1.thresh.rows, static_cast<int>(frame1.thresh.step), QImage::Format_Grayscale8).copy();
     qimg2 = QImage(frame2.thresh.data, frame2.thresh.cols, frame2.thresh.rows, static_cast<int>(frame2.thresh.step), QImage::Format_Grayscale8).copy();
-    qimg3 = QImage(frame3.thresh.data, frame3.thresh.cols, frame3.thresh.rows, static_cast<int>(frame3.thresh.step), QImage::Format_Grayscale8).copy();
   }
   else if (index == 2)
   { // Ball detection case
     qimg1 = QImage(frame1.annotated.data, frame1.annotated.cols, frame1.annotated.rows, static_cast<int>(frame1.annotated.step), QImage::Format_RGB888).copy();
     qimg2 = QImage(frame2.annotated.data, frame2.annotated.cols, frame2.annotated.rows, static_cast<int>(frame2.annotated.step), QImage::Format_RGB888).copy();
+<<<<<<< Updated upstream
     qimg3 = QImage(frame3.annotated.data, frame3.annotated.cols, frame3.annotated.rows, static_cast<int>(frame3.annotated.step), QImage::Format_BGR888).copy();
     if (frame1.hasBall)
     {
@@ -66,6 +65,8 @@ void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2, c
     {
       ui->size_label->setText("--");
     }
+=======
+>>>>>>> Stashed changes
   }
 
   // Convert images to QPixmap and send to QLabel
