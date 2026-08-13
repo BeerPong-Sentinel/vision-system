@@ -3,9 +3,9 @@
 #include <opencv2/opencv.hpp>
 
 // Import Qt Nodes
-#include "CameraController.h"
-#include "ImageProcessing.h"
-#include "CameraParams.h"
+#include "camera_worker.h"
+#include "image_processing.h"
+#include "camera_worker.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -27,6 +27,6 @@ private slots:
 
 private:
   Ui::MainWindow *ui;
-  CameraController *cameras;
+  std::unique_ptr<CameraWorker> camera_worker;
   ImageProcessor *imageProcessor;
 };

@@ -12,10 +12,10 @@ MainWindow::MainWindow(QWidget *parent)
 
   qDebug() << "Connecting Labels";
 
-  cameras = new CameraController(this);
+  camera_worker = std::make_unique<CameraWorker>(this);
   imageProcessor = new ImageProcessor(this);
 
-  connect(cameras, &CameraController::newFrame, imageProcessor, &ImageProcessor::processFrames);
+  connect(camera_worker.get(), &CameraWorker::newFrame, imageProcessor, &ImageProcessor::processFrames);
   connect(imageProcessor, &ImageProcessor::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
   connect(ui->margin_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
           { imageProcessor->updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
@@ -27,7 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
           { imageProcessor->updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
   qDebug() << "Starting Cameras";
 
-  cameras->startCamera();
+  camera_worker->start();
 }
 
 MainWindow::~MainWindow()

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "CameraParams.h"
+#include "camera_params.h"
 #include <QtCore/QThread>
 #include <opencv2/opencv.hpp>
 

@@ -4,7 +4,7 @@ project( BeerPongSentinelGUI )
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SPINNAKER_ROOT "" CACHE PATH "Path to Spinnaker SDK installation (optional)")
+set(SPINNAKER_ROOT "/Applications/Spinnaker/" CACHE PATH "Path to Spinnaker SDK installation (optional)")
 
 find_path(SPINNAKER_INCLUDE_DIR
     NAMES Spinnaker.h
@@ -42,10 +42,12 @@ add_executable(BeerPongSentinelGUI
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
-    CameraController.cpp
-    CameraController.h
-    ImageProcessing.cpp
-    ImageProcessing.h
+    camera_controller.cpp
+    camera_controller.h
+    camera_worker.h
+    camera_worker.cpp
+    image_processing.cpp
+    image_processing.h
 )
 
 target_include_directories(BeerPongSentinelGUI PRIVATE ${SPINNAKER_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})

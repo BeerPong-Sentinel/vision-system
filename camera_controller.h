@@ -12,40 +12,33 @@
 #include "Spinnaker.h"
 #include <SpinGenApi/SpinnakerGenApi.h>
 
-#include "CameraParams.h"
+#include "camera_params.h"
 
-#include <QtCore/QThread>
-#include <QTimer>
-#include <QtGui/QImage>
 #include <Spinnaker.h>
 #include <SpinGenApi/SpinnakerGenApi.h>
 #include <opencv2/opencv.hpp>
 #include <string>
+#include <array>
+
 
 inline const CameraDetails kCam1 = {"Camera 1", "24292737"};
 inline const CameraDetails kCam2 = {"Camera 2", "25376121"}; // Badminton Bot Team's Camera Id
 // inline const Camera kCam2 = {"Camera 2", "24292752"}; 
 
-class CameraController : public QObject
-{
-  Q_OBJECT
+class CameraController {
+
 public:
-  CameraController(QObject *parent = nullptr);
+  CameraController() {};
   ~CameraController();
 
-  void startCamera();
-  void stopCamera();
+  void startCameras();
+  void stopCameras();
 
-signals:
-  void newFrame(const Frame &frame1, const Frame &frame2);
-
-private slots:
-  void acquireFrame();
+  std::array<Frame, 2> grabFrame();
 
 private:
   Spinnaker::SystemPtr system;
   Spinnaker::CameraList camList;
   Spinnaker::CameraPtr cam1;
   Spinnaker::CameraPtr cam2;
-  QTimer *timer;
 };

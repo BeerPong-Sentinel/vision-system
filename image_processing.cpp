@@ -1,5 +1,4 @@
-#include "ImageProcessing.h"
-#include "CameraParams.h"
+#include "image_processing.h"
 #include <QtCore/QDebug>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/geometry.hpp>

@@ -1,5 +1,4 @@
-#include "CameraController.h"
-#include <QtCore/QDebug>
+#include "camera_controller.h"
 
 namespace {
   void InitializeCam(Spinnaker::CameraPtr& cam, CameraDetails kCam, const Spinnaker::CameraList& camList) {
@@ -22,26 +21,22 @@ namespace {
       }
       cam->BeginAcquisition();
 
-      qDebug() << "Successfully Initialized" << kCam.name;
+      std::cout << "Successfully Initialized" << kCam.name << std::endl;
     }
     else
     {
-      qDebug() << "Could Not Connect to " << kCam.name;
+      std::cout << "Could Not Connect to " << kCam.name << std::endl;
     }
   }
 }
 
-CameraController::CameraController(QObject *parent) : QObject(parent), timer(new QTimer(this))
-{
-  connect(timer, &QTimer::timeout, this, &CameraController::acquireFrame);
-}
 
 CameraController::~CameraController()
 {
-  stopCamera();
+  stopCameras();
 }
 
-void CameraController::startCamera()
+void CameraController::startCameras()
 {
   // Retrieve singleton reference to system object
   system = Spinnaker::System::GetInstance();
@@ -51,21 +46,21 @@ void CameraController::startCamera()
 
   const unsigned int numCameras = camList.GetSize();
 
-  qDebug() << "Number of Cameras Detected: " << numCameras;
+  std::cout << "Number of Cameras Detected: " << numCameras << std::endl;
 
   if (numCameras == 0)
   {
-    qCritical() << "Not enough cameras!";
+    std::cerr << "Not enough cameras!" << std::endl;
   }
   
   InitializeCam(cam1, kCam1, camList);
   InitializeCam(cam2, kCam2, camList);
 
-  timer->start(1);
 }
 
-void CameraController::stopCamera()
+void CameraController::stopCameras()
 {
+  camList.Clear();
   if (cam1 && cam1->IsStreaming())
     cam1->EndAcquisition();
   if (cam1 && cam1->IsInitialized())
@@ -82,7 +77,7 @@ void CameraController::stopCamera()
   system->ReleaseInstance();
 }
 
-void CameraController::acquireFrame()
+std::array<Frame, 2> CameraController::grabFrame()
 {
   const int image_width = 720;
   const int image_height = 540;
@@ -94,6 +89,8 @@ void CameraController::acquireFrame()
   frame1.raw = cv::Mat(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
   frame2.raw = cv::Mat(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
 
+  std::array<Frame, 2> frames = {frame1, frame2};
+
   if (cam1)
   {
 
@@ -103,7 +100,7 @@ void CameraController::acquireFrame()
 
     if (cam1frame->IsIncomplete())
     {
-      qDebug() << "Image1 Incomplete: " << Spinnaker::Image::GetImageStatusDescription(cam1frame->GetImageStatus());
+      std::cerr << "Image1 Incomplete: " << Spinnaker::Image::GetImageStatusDescription(cam1frame->GetImageStatus()) << std::endl;
     }
     else
     {
@@ -114,7 +111,7 @@ void CameraController::acquireFrame()
           convertedImage->GetWidth(),
           CV_8UC3,
           convertedImage->GetData());
-      frame1.raw = tmp;
+      frames.at(0).raw = tmp.clone();
     }
 
     cam1frame->Release();
@@ -127,7 +124,7 @@ void CameraController::acquireFrame()
 
     if (cam2frame->IsIncomplete())
     {
-      qDebug() << "Image2 Incomplete: " << Spinnaker::Image::GetImageStatusDescription(cam2frame->GetImageStatus());
+      std::cerr << "Image2 Incomplete: " << Spinnaker::Image::GetImageStatusDescription(cam2frame->GetImageStatus());
     }
     else
     {
@@ -138,10 +135,10 @@ void CameraController::acquireFrame()
           convertedImage->GetWidth(),
           CV_8UC3,
           convertedImage->GetData());
-      frame2.raw = tmp.clone();
+      frames.at(1).raw = tmp.clone();
     }
     cam2frame->Release();
   }
-
-  emit newFrame(frame1, frame2);
+  
+  return frames;
 }
