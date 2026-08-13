@@ -13,18 +13,17 @@ MainWindow::MainWindow(QWidget *parent)
   qDebug() << "Connecting Labels";
 
   camera_worker = std::make_unique<CameraWorker>(this);
-  imageProcessor = new ImageProcessor(this);
 
-  connect(camera_worker.get(), &CameraWorker::newFrame, imageProcessor, &ImageProcessor::processFrames);
-  connect(imageProcessor, &ImageProcessor::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
+  connect(camera_worker.get(), &CameraWorker::newFrame, &image_processing_worker, &ImageProcessorWorker::processFrames);
+  connect(&image_processing_worker, &ImageProcessorWorker::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
   connect(ui->margin_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
-          { imageProcessor->updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
+          { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
   connect(ui->low_thresh_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
-          { imageProcessor->updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
+          { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
   connect(ui->min_size_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
-          {imageProcessor->updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
+          { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
   connect(ui->margin_val_2, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
-          { imageProcessor->updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
+          { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
   qDebug() << "Starting Cameras";
 
   camera_worker->start();

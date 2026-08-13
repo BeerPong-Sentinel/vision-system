@@ -5,34 +5,14 @@
 
 using namespace cv;
 
-ImageProcessor::ImageProcessor(QObject *parent) : QObject(parent),
-                                                  m_greenMargin(10), m_lowThresh(160)
-{
+ImageProcessor::ImageProcessor() {
 }
 
 ImageProcessor::~ImageProcessor()
 {
 }
 
-void ImageProcessor::processFrames(const Frame &frame1, const Frame &frame2)
-{
-    Frame processed1;
-    Frame processed2;
-
-    processed1.raw = frame1.raw.clone();
-    processed2.raw = frame2.raw.clone();
-
-    processed1.thresh = tennisThreshold(processed1.raw);
-    processed2.thresh = tennisThreshold(processed2.raw);
-
-    // processed1.thresh = hsvThreshold(processed1.raw);
-    // processed2.thresh = hsvThreshold(processed2.raw);
-    detectBall(processed1.raw, processed1.thresh, processed1.hasBall, processed1.ballCenter, processed1.ballRadius, processed1.annotated);
-    detectBall(processed2.raw, processed2.thresh, processed2.hasBall, processed2.ballCenter, processed2.ballRadius, processed2.annotated);
-    emit newProcessedFrame(processed1, processed2);
-}
-
-cv::Mat ImageProcessor::tennisThreshold(cv::Mat raw)
+cv::Mat ImageProcessor::tennisThreshold(const cv::Mat& raw)
 {
     Mat colour_channels[3];
     Mat gauss;
@@ -61,7 +41,7 @@ cv::Mat ImageProcessor::tennisThreshold(cv::Mat raw)
     return result;
 }
 
-cv::Mat ImageProcessor::hsvThreshold(cv::Mat raw)
+cv::Mat ImageProcessor::hsvThreshold(const cv::Mat& raw)
 {
     Mat hsv_image, hsv_img_gauss;
     cvtColor(raw, hsv_image, COLOR_BGR2HSV);
@@ -75,7 +55,7 @@ cv::Mat ImageProcessor::hsvThreshold(cv::Mat raw)
     return masked;
 }
 
-cv::Point2f ImageProcessor::detectBall(cv::Mat raw, cv::Mat thresh, bool &hasBall, cv::Point2f &center, float &radius, cv::Mat &annotated)
+cv::Point2f ImageProcessor::detectBall(const cv::Mat& raw, const cv::Mat& thresh, bool &hasBall, cv::Point2f &center, float &radius, cv::Mat& annotated)
 {
     hasBall = false;
     annotated = raw.clone();

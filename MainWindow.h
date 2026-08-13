@@ -4,7 +4,7 @@
 
 // Import Qt Nodes
 #include "camera_worker.h"
-#include "image_processing.h"
+#include "image_processing_worker.h"
 #include "camera_worker.h"
 
 QT_BEGIN_NAMESPACE
@@ -28,5 +28,5 @@ private slots:
 private:
   Ui::MainWindow *ui;
   std::unique_ptr<CameraWorker> camera_worker;
-  ImageProcessor *imageProcessor;
+  ImageProcessorWorker image_processing_worker;
 };

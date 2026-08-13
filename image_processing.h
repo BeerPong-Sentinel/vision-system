@@ -4,20 +4,18 @@
 #include <QtCore/QThread>
 #include <opencv2/opencv.hpp>
 
-class ImageProcessor : public QObject
-{
-  Q_OBJECT
+class ImageProcessor {
 public:
-  ImageProcessor(QObject *parent = nullptr);
+  ImageProcessor();
   ~ImageProcessor();
 
-signals:
-  void newProcessedFrame(const Frame &frame1, const Frame &frame2);
+  cv::Mat greenThreshold(const cv::Mat& raw);
+  cv::Mat blueThreshold(const cv::Mat& raw);
+  cv::Mat tennisThreshold(const cv::Mat& raw);
+  cv::Mat hsvThreshold(const cv::Mat& raw);
+  cv::Point2f detectBall(const cv::Mat& raw, const cv::Mat& thresh, bool &hasBall, cv::Point2f &center, float &radius, cv::Mat &annotated);
 
-public slots:
-  void processFrames(const Frame &frame1, const Frame &frame2);
   void updateHSVParams(const int h_min, const int h_max, const int s_min, const int s_max, const int v_min, const int v_max);
-
   void updateThreshParams(int margin, int lowThresh, int minSize, int margin_2);
 
 
@@ -30,9 +28,4 @@ private:
   int m_lowThresh = 10;
   int m_minSize = 5;
 
-  cv::Mat greenThreshold(cv::Mat raw);
-  cv::Mat blueThreshold(cv::Mat raw);
-  cv::Mat tennisThreshold(cv::Mat raw);
-  cv::Mat hsvThreshold(cv::Mat raw);
-  cv::Point2f detectBall(cv::Mat raw, cv::Mat thresh, bool &hasBall, cv::Point2f &center, float &radius, cv::Mat &annotated);
 };

@@ -13,7 +13,6 @@ struct Frame
   cv::Mat raw;
   cv::Mat thresh;
   cv::Mat annotated;
-  cv::Mat trajectory_annotated;
   std::chrono::steady_clock::time_point t;
   cv::Point2f ballCenter;
   float ballRadius = 0;

@@ -48,6 +48,8 @@ add_executable(BeerPongSentinelGUI
     camera_worker.cpp
     image_processing.cpp
     image_processing.h
+    image_processing_worker.h
+    image_processing_worker.cpp
 )
 
 target_include_directories(BeerPongSentinelGUI PRIVATE ${SPINNAKER_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
