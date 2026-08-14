@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QComboBox" name="imagedisptype">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>131</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="placeholderText">
+     <string>Image Type</string>
+    </property>
+    <item>
+     <property name="text">
+      <string>Raw</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Thresholded</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Bounding Box</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QSplitter" name="splitter_2">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>380</y>
+      <width>771</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Orientation::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QSplitter" name="splitter">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>80</y>
+      <width>771</width>
+      <height>281</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Orientation::Horizontal</enum>
+    </property>
+    <widget class="QLabel" name="camera1">
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="camera2">
+     <property name="text">
+      <string>TextLabel</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>480</y>
+      <width>84</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <widget class="QSpinBox" name="saturationMax">
+     <property name="geometry">
+      <rect>
+       <x>47</x>
+       <y>1</y>
+       <width>36</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="maximum">
+      <number>255</number>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="saurationMin">
+     <property name="geometry">
+      <rect>
+       <x>1</x>
+       <y>1</y>
+       <width>36</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="maximum">
+      <number>255</number>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="widget_2" native="true">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>510</y>
+      <width>84</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <widget class="QSpinBox" name="valueMax">
+     <property name="geometry">
+      <rect>
+       <x>47</x>
+       <y>1</y>
+       <width>36</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="maximum">
+      <number>255</number>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="valueMin">
+     <property name="geometry">
+      <rect>
+       <x>1</x>
+       <y>1</y>
+       <width>36</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="maximum">
+      <number>255</number>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>450</y>
+      <width>91</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Hue</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Saturation</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Value</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>410</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item alignment="Qt::AlignmentFlag::AlignHCenter">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Min</string>
+       </property>
+      </widget>
+     </item>
+     <item alignment="Qt::AlignmentFlag::AlignHCenter">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Max</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>450</y>
+      <width>84</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <widget class="QSpinBox" name="hueMax">
+     <property name="geometry">
+      <rect>
+       <x>47</x>
+       <y>1</y>
+       <width>36</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="maximum">
+      <number>179</number>
+     </property>
+    </widget>
+    <widget class="QSpinBox" name="hueMin">
+     <property name="geometry">
+      <rect>
+       <x>1</x>
+       <y>1</y>
+       <width>36</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="maximum">
+      <number>179</number>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>288</x>
+      <y>450</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>GreenMargin</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>278</x>
+      <y>470</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Lower Thresh</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="margin_val">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>440</y>
+      <width>101</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="low_thresh_val">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>470</y>
+      <width>101</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="min_size_val">
+    <property name="geometry">
+     <rect>
+      <x>370</x>
+      <y>500</y>
+      <width>101</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>500</y>
+      <width>49</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Min Size</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>530</x>
+      <y>440</y>
+      <width>81</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Current Size</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="size_label">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>460</y>
+      <width>49</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QSpinBox" name="margin_val_2">
+    <property name="geometry">
+     <rect>
+      <x>372</x>
+      <y>520</y>
+      <width>101</width>
+      <height>25</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_10">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>520</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>BlueMargin</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
