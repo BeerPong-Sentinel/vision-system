@@ -47,8 +47,11 @@ cv::Mat ImageProcessor::hsvThreshold(const cv::Mat& raw)
     cvtColor(raw, hsv_image, COLOR_BGR2HSV);
     GaussianBlur(hsv_image, hsv_img_gauss, cv::Size(5, 5), 0);
 
-    Scalar lower_bound = Scalar(20, 40, 10);
-    Scalar upper_bound = Scalar(100, 255, 255);
+    Scalar lower_bound = Scalar(m_hueMin, 40, 10);
+    Scalar upper_bound = Scalar(m_hueMax, 255, 255);
+
+    // Scalar lower_bound = Scalar(m_hueMin, m_saturationMin, m_valueMin);
+    // Scalar upper_bound = Scalar(m_hueMax, m_saturationMax, m_valueMax);
 
     Mat masked;
     inRange(hsv_img_gauss, lower_bound, upper_bound, masked);
@@ -104,6 +107,10 @@ void ImageProcessor::updateHSVParams(const int h_min, const int h_max, const int
     m_saturationMax = s_max;
     m_valueMin = v_min;
     m_valueMax = v_max;
+
+
+    std::cout << "m_hueMin = " << m_hueMin << std::endl;
+    std::cout << "m_hueMax = " << m_hueMax << std::endl;
 }
 
 void ImageProcessor::updateThreshParams(int margin, int lowThresh, int minSize, int margin_2)

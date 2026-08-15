@@ -16,15 +16,22 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(camera_worker.get(), &CameraWorker::newFrame, &image_processing_worker, &ImageProcessorWorker::processFrames);
   connect(&image_processing_worker, &ImageProcessorWorker::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
+   auto updateHSV = [this]()
+    {
+      image_processing_worker.updateHSVParams(ui->hueMin->value(), ui->hueMax->value(),
+                                               ui->saturationMin->value(), ui->saturationMax->value(),
+                                               ui->valueMin->value(), ui->valueMax->value());
+    };
+    connect(ui->hueMin, QOverload<int>::of(&QSpinBox::valueChanged), this, updateHSV);
+    connect(ui->hueMax, QOverload<int>::of(&QSpinBox::valueChanged), this, updateHSV);
+    connect(ui->saturationMin, QOverload<int>::of(&QSpinBox::valueChanged), this, updateHSV);
+    connect(ui->saturationMax, QOverload<int>::of(&QSpinBox::valueChanged), this, updateHSV);
+    connect(ui->valueMin, QOverload<int>::of(&QSpinBox::valueChanged), this, updateHSV);
+    connect(ui->valueMax, QOverload<int>::of(&QSpinBox::valueChanged), this, updateHSV);
+  qDebug() << "Starting Cameras";
+
   connect(ui->margin_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
           { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
-  connect(ui->low_thresh_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
-          { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
-  connect(ui->min_size_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
-          { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
-  connect(ui->margin_val_2, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
-          { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
-  qDebug() << "Starting Cameras";
 
   camera_worker->start();
 }
@@ -52,6 +59,7 @@ void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2)
   }
   else if (index == 2)
   { // Ball detection case
+    qimg1 = QImage(frame1.annotated.data, frame1.annotated.cols, frame1.annotated.rows, static_cast<int>(frame1.annotated.step), QImage::Format_RGB888).copy();
     qimg2 = QImage(frame2.annotated.data, frame2.annotated.cols, frame2.annotated.rows, static_cast<int>(frame2.annotated.step), QImage::Format_RGB888).copy();
     if (frame1.hasBall)
     {

@@ -21,8 +21,9 @@
 #include <array>
 
 
-inline const CameraDetails kCam1 = {"Camera 1", "24292737"};
-inline const CameraDetails kCam2 = {"Camera 2", "25376121"}; // Badminton Bot Team's Camera Id
+// inline const CameraDetails kCam1 = {"Camera 1", "24292737"};
+inline const CameraDetails kCam1 = {"Camera L", "25376120"}; // Badminton Bot Team's Other Camera
+inline const CameraDetails kCam2 = {"Camera R", "25376121"}; // Badminton Bot Team's Camera Id
 // inline const Camera kCam2 = {"Camera 2", "24292752"}; 
 
 class CameraController {
