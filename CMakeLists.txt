@@ -39,17 +39,18 @@ set(CMAKE_AUTORCC ON)
 
 add_executable(BeerPongSentinelGUI
     main.cpp
-    mainwindow.cpp
-    mainwindow.h
-    mainwindow.ui
-    camera_controller.cpp
-    camera_controller.h
-    camera_worker.h
-    camera_worker.cpp
-    image_processing.cpp
-    image_processing.h
-    image_processing_worker.h
-    image_processing_worker.cpp
+    app/mainwindow.cpp
+    app/mainwindow.h
+    app/mainwindow.ui
+    app/camera_worker.h
+    app/camera_worker.cpp
+    app/image_processing_worker.h
+    app/image_processing_worker.cpp
+
+    core/camera_controller.cpp
+    core/camera_controller.h
+    core/image_processing.cpp
+    core/image_processing.h
 )
 
 target_include_directories(BeerPongSentinelGUI PRIVATE ${SPINNAKER_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})

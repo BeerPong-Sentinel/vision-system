@@ -33,8 +33,8 @@ if(NOT SPINNAKER_INCLUDE_DIR OR NOT SPINNAKER_LIB OR NOT SPINNAKER_GENAPI_LIB OR
 endif()
 add_executable(FrameGrabber
   main.cpp
-  ../camera_controller.h
-  ../camera_controller.cpp
+  ../core/camera_controller.h
+  ../core/camera_controller.cpp
 )
 
 target_include_directories(FrameGrabber PRIVATE ${SPINNAKER_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})

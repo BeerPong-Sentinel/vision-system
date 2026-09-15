@@ -1,4 +1,4 @@
-#include "../camera_controller.h"
+#include "../core/camera_controller.h"
 #include <array>
 #include <opencv2/opencv.hpp>
 #include <format>
@@ -13,7 +13,7 @@ int main() {
     std::stringstream ss;
     ss << "frame" << i << ".png";
     std::array<Frame, 2> grame = controller->grabFrame(); 
-    std::cout << i << std::endl;
+    std::cout <<"Press Enter to take picture: " << i << std::endl;
     std::cin.get();
 
     cv::imwrite(ss.str(), grame.at(1).raw);
