@@ -2,12 +2,13 @@ import cv2
 import cv2.aruco as aruco
 import glob
 import numpy as np
+import sys
 
 # Define ChArUco board parameters
 SQUARX = 11  # Number of squares in X direction
 SQUARY = 7  # Number of squares in Y direction
-SQUARE_LENGTH = 0.0365125  # Side length of a square in meters
-MARKER_LENGTH = 0.028575  # Side length of an ArUco marker in meters
+SQUARE_LENGTH = 0.024  # Side length of a square in meters
+MARKER_LENGTH = 0.019  # Side length of an ArUco marker in meters
 DICTIONARY_ID = aruco.DICT_6X6_250
 
 # Setup ArUco dictionary and board
@@ -16,8 +17,14 @@ board = aruco.CharucoBoard((SQUARX, SQUARY), SQUARE_LENGTH, MARKER_LENGTH, dicti
 detector = aruco.CharucoDetector(board)
 
 # Load calibration images
-images = glob.glob('../sandbox/images/*.png')
-print(images)
+images1 = glob.glob('../sandbox/images/*1_*.png')
+images2 = glob.glob('../sandbox/images/*2_*.png')
+print(images1)
+print(len(images1))
+print(images2)
+print(len(images2))
+
+sys.exit()
 all_object_points = []  # 3D points in real world space
 all_image_points = []   # 2D points in image plane
 image_size = None
