@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QtCore/QDebug>
 #include <opencv2/opencv.hpp>
+#include <format>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -16,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(camera_worker.get(), &CameraWorker::newFrame, &image_processing_worker, &ImageProcessorWorker::processFrames);
   connect(&image_processing_worker, &ImageProcessorWorker::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
+  connect(&image_processing_worker, &ImageProcessorWorker::newBallPosition, this, &MainWindow::updateBallPosition);
    auto updateHSV = [this]()
     {
       image_processing_worker.updateHSVParams(ui->hueMin->value(), ui->hueMax->value(),
@@ -75,4 +77,12 @@ void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2)
   // Convert images to QPixmap and send to QLabel
   ui->camera1->setPixmap(QPixmap::fromImage(qimg1).scaled(ui->camera1->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
   ui->camera2->setPixmap(QPixmap::fromImage(qimg2).scaled(ui->camera2->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+}
+
+void MainWindow::updateBallPosition(std::optional<cv::Point3f> pos) {
+  if (pos.has_value()) {
+    ui->ball_pos->setText(QString::fromStdString(std::format("({:.2f}, {:.2f}, {:.2})", pos.value().x, pos.value().y, pos.value().z)));
+  } else {
+    ui->ball_pos->setText("(__, __, __)");
+  }
 }

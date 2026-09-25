@@ -20,6 +20,13 @@ void ImageProcessorWorker::processFrames(const Frame &frame1, const Frame &frame
   processor.detectBall(processed2.raw, processed2.thresh, processed2.hasBall, processed2.ballCenter, processed2.ballRadius, processed2.annotated);
 
   emit newProcessedFrame(processed1, processed2);
+
+  // Space Transformation
+  if (!processed1.hasBall || !processed2.hasBall) {
+    // emit newBallPosition(std::nullopt);
+  } else {
+    emit newBallPosition(processor.getBall3DCoords(processed1.ballCenter, processed2.ballCenter));
+  }
 }
 
 void ImageProcessorWorker::updateHSVParams(const int h_min, const int h_max, const int s_min, const int s_max, const int v_min, const int v_max) {

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project( BeerPongSentinelGUI )
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SPINNAKER_ROOT "/Applications/Spinnaker/" CACHE PATH "Path to Spinnaker SDK installation (optional)")
@@ -22,6 +22,9 @@ find_library(SPINNAKER_GCBASE_LIB
     NAMES GCBase_clang140_v3_0
     PATHS ${SPINNAKER_ROOT}/lib
 )
+
+find_library(CNPY_LIBRARY NAMES cnpy REQUIRED)
+find_path(CNPY_INCLUDE_DIR NAMES cnpy.h REQUIRED)
 
 if(NOT SPINNAKER_INCLUDE_DIR OR NOT SPINNAKER_LIB OR NOT SPINNAKER_GENAPI_LIB OR NOT SPINNAKER_GCBASE_LIB)
     message(FATAL_ERROR "Spinnaker SDK not found. Set -DSPINNAKER_ROOT=/path/to/spinnaker")
@@ -53,7 +56,13 @@ add_executable(BeerPongSentinelGUI
     core/image_processing.h
 )
 
-target_include_directories(BeerPongSentinelGUI PRIVATE ${SPINNAKER_INCLUDE_DIR} ${OpenCV_INCLUDE_DIRS})
+target_include_directories(BeerPongSentinelGUI PRIVATE 
+  ${SPINNAKER_INCLUDE_DIR}
+  ${OpenCV_INCLUDE_DIRS}
+  ${CNPY_INCLUDE_DIR}
+  lib 
+)
+
 target_link_libraries(
   BeerPongSentinelGUI
   ${OpenCV_LIBS}
@@ -61,4 +70,6 @@ target_link_libraries(
   ${SPINNAKER_LIB}
   ${SPINNAKER_GENAPI_LIB}
   ${SPINNAKER_GCBASE_LIB}
+  ${CNPY_LIBRARY}
+  z
 )

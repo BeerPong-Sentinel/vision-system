@@ -3,6 +3,7 @@
 #include "../camera_params.h"
 #include "../core/image_processing.h"
 #include <QtCore/QThread>
+#include <optional>
 
 class ImageProcessorWorker :public QObject
 {
@@ -14,6 +15,7 @@ public:
 
 signals:
   void newProcessedFrame(const Frame &frame1, const Frame &frame2);
+  void newBallPosition(std::optional<cv::Point3f> pos);
 
 public slots:
   void processFrames(const Frame &frame1, const Frame &frame2);
@@ -21,5 +23,5 @@ public slots:
   void updateThreshParams(int margin, int lowThresh, int minSize, int margin_2);
 
 private:
-  ImageProcessor processor;
+  ImageProcessor processor{"core/stereo_data.npz"};
 };

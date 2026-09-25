@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 # 1. Load the image file into a NumPy array
-img = mpimg.imread('../sandbox/frame3.png')
+img = mpimg.imread('../sandbox/images/Camera_1_1.png')
 
 # 2. Render the array data as an image
 plt.imshow(img)

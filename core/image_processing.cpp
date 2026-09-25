@@ -1,11 +1,41 @@
 #include "image_processing.h"
-#include <QtCore/QDebug>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/geometry.hpp>
+#include <filesystem>
+#include "cnpy.h"
 
 using namespace cv;
+namespace fs = std::filesystem;
 
-ImageProcessor::ImageProcessor() {
+namespace {
+  cv::Mat npyDoubleToMat(cnpy::NpyArray arr) {
+    size_t rows = arr.shape[0];
+    size_t cols = arr.shape[1];
+    
+    return cv::Mat(rows, cols, CV_64FC1, arr.data<double>()).clone();
+  }
+
+  cv::Matx34d calculateProjMat(cv::Matx33d K, cv::Matx33d R, cv::Matx31d T) {
+    cv::Matx34d RT;
+    cv::hconcat(R, T, RT);
+
+    return K * RT;
+  }
+}
+
+ImageProcessor::ImageProcessor(std::string stereo_data_path) {
+  cnpy::npz_t stereo_data = cnpy::npz_load(stereo_data_path);
+
+  m_K_1 = npyDoubleToMat(stereo_data["K_1"]);
+  m_K_2 = npyDoubleToMat(stereo_data["K_2"]);
+  m_R = npyDoubleToMat(stereo_data["R"]);
+  m_T = npyDoubleToMat(stereo_data["T"]);
+
+  m_projMat1 = calculateProjMat(m_K_1, cv::Matx33d::eye(), cv::Matx31d::zeros());
+  m_projMat2 = calculateProjMat(m_K_2, m_R, m_T);
+
+  m_D_1 = npyDoubleToMat(stereo_data["D_1"]);
+  m_D_2 = npyDoubleToMat(stereo_data["D_2"]);
 }
 
 ImageProcessor::~ImageProcessor()
@@ -97,6 +127,55 @@ cv::Point2f ImageProcessor::detectBall(const cv::Mat& raw, const cv::Mat& thresh
     hasBall = true;
     cv::circle(annotated, center, radius, cv::Scalar(255, 0, 255), 2);
     return center;
+}
+
+cv::Point3f ImageProcessor::getBall3DCoords(cv::Point2f pos_1, cv::Point2f pos_2) {
+    std::array<cv::Point2f, 1> undistorted_pt_1;
+    std::array<cv::Point2f, 1> undistorted_pt_2;
+
+    cv::undistortPoints(
+      std::array<Point2f, 1>{pos_1},
+      undistorted_pt_1,
+      m_K_1,
+      m_D_1,
+      cv::noArray(),
+      m_K_1 
+    );
+
+    cv::undistortPoints(
+      std::array<Point2f, 1>{pos_2},
+      undistorted_pt_2,
+      m_K_2,
+      m_D_2,
+      cv::noArray(),
+      m_K_2 
+    );
+    
+    cv::Mat pos4D;
+    
+    cv::triangulatePoints(
+      m_projMat1,
+      m_projMat2,
+      std::array<Point2d, 1>{undistorted_pt_1[0]},
+      std::array<Point2d, 1>{undistorted_pt_2[0]},
+      pos4D
+    );
+    
+    cv::Point3f pos;
+    
+    double X = pos4D.at<double>(0, 0);
+    double Y = pos4D.at<double>(1, 0);
+    double Z = pos4D.at<double>(2, 0);
+    double W = pos4D.at<double>(3, 0);
+    
+    if (W != 0.0) {
+      pos.x = X/W;
+      pos.y = Y/W;
+      pos.z = Z/W;
+    } else {
+      // std::cout << "W = 0" << std::endl;
+    }
+    return pos;
 }
 
 void ImageProcessor::updateHSVParams(const int h_min, const int h_max, const int s_min, const int s_max, const int v_min, const int v_max)

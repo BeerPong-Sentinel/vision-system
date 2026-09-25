@@ -23,6 +23,7 @@ public:
 
 private slots:
   void updateCameraDisplay(const Frame &frame1, const Frame &frame2);
+  void updateBallPosition(std::optional<cv::Point3f> pos);
 
 private:
   Ui::MainWindow *ui;

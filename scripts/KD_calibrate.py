@@ -35,7 +35,7 @@ def extract_pts(images):
             # Match 2D image points to 3D object points using the board layout
             obj_pts, img_pts = board.matchImagePoints(charuco_corners, charuco_ids)
             
-            if len(obj_pts) > 4:
+            if len(obj_pts) > 10:
                 all_object_points.append(obj_pts)
                 all_image_points.append(img_pts)
     return all_object_points, all_image_points, image_size
@@ -43,6 +43,7 @@ def extract_pts(images):
 def get_K_D(K, D, obj_pts, img_pts, image_size):
     print(len(obj_pts))
     print(len(img_pts))
+
     ret, K, D, rvecs, tvecs = cv2.calibrateCamera(
         obj_pts, img_pts, image_size, None, None
     )
@@ -124,8 +125,8 @@ if __name__ == "__main__":
     K_2 = []
     D_2 = []
 
-    images1 = glob.glob('../sandbox/images/*1_*.png')
-    images2 = glob.glob('../sandbox/images/*2_*.png')
+    images1 = glob.glob('../sandbox/camera_capture/images/*1_*.png')
+    images2 = glob.glob('../sandbox/camera_capture/images/*2_*.png')
         
     images1.sort()
     images2.sort()
@@ -145,14 +146,15 @@ if __name__ == "__main__":
     print(type(obj_pts_2), len(obj_pts_2))
     print(type(img_pts_2), len(img_pts_2))
     print(image_size)
+
     ret_1, K_1, D_1 = get_K_D(K_1, D_1, obj_pts_1, img_pts_1, image_size)
     ret_2, K_2, D_2 = get_K_D(K_2, D_2, obj_pts_2, img_pts_2, image_size)
 
     print(f"Reprojection Error 1: {ret_1}")
     print(f"Reprojection Error 2: {ret_2}")
 
-    print(K_1)
-    print(K_2)
+    print("K_1", K_1)
+    print("K_2", K_2)
     
     obj_pts, img_pts_1, img_pts_2 = get_common_pts(images1, images2)
 
@@ -171,7 +173,8 @@ if __name__ == "__main__":
     print(f"R: {R}")
     print(f"T: {T}")
     print(f"Dist between Cameras: {np.linalg.norm(T)}")
-
+    
+    print(K_2.shape)
     np.savez(
         "stereo_data.npz",
         K_1=K_1,
