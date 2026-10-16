@@ -90,9 +90,9 @@
     <widget class="QSpinBox" name="saturationMax">
      <property name="geometry">
       <rect>
-       <x>47</x>
-       <y>1</y>
-       <width>36</width>
+       <x>45</x>
+       <y>0</y>
+       <width>41</width>
        <height>21</height>
       </rect>
      </property>
@@ -103,8 +103,8 @@
     <widget class="QSpinBox" name="saturationMin">
      <property name="geometry">
       <rect>
-       <x>1</x>
-       <y>1</y>
+       <x>0</x>
+       <y>0</y>
        <width>36</width>
        <height>21</height>
       </rect>
@@ -128,7 +128,7 @@
       <rect>
        <x>47</x>
        <y>1</y>
-       <width>36</width>
+       <width>41</width>
        <height>21</height>
       </rect>
      </property>
@@ -223,7 +223,7 @@
       <rect>
        <x>47</x>
        <y>1</y>
-       <width>36</width>
+       <width>41</width>
        <height>21</height>
       </rect>
      </property>

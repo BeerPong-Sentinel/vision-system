@@ -13,6 +13,12 @@ MainWindow::MainWindow(QWidget *parent, ConfigData config)
 {
 
   ui->setupUi(this);
+  ui->hueMin->setValue(config.hsv.h_min);
+  ui->hueMax->setValue(config.hsv.h_max);
+  ui->saturationMin->setValue(config.hsv.s_min);
+  ui->saturationMax->setValue(config.hsv.s_max);
+  ui->valueMin->setValue(config.hsv.v_min);
+  ui->valueMax->setValue(config.hsv.v_max);
 
   qDebug() << "Connecting Labels";
 
