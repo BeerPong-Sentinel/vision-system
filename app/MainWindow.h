@@ -18,7 +18,7 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  MainWindow(QWidget *parent = nullptr);
+  MainWindow(QWidget *parent = nullptr, ConfigData config = {});
   ~MainWindow();
 
 private slots:
@@ -27,6 +27,6 @@ private slots:
 
 private:
   Ui::MainWindow *ui;
-  std::unique_ptr<CameraWorker> camera_worker;
+  CameraWorker camera_worker;
   ImageProcessorWorker image_processing_worker;
 };

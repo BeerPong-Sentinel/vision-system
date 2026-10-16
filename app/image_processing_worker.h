@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../camera_params.h"
+#include "../datatypes.h"
 #include "../core/image_processing.h"
 #include <QtCore/QThread>
 #include <optional>
@@ -10,7 +10,7 @@ class ImageProcessorWorker :public QObject
   Q_OBJECT
 
 public:
-  ImageProcessorWorker(QObject *parent = nullptr);
+  ImageProcessorWorker(QObject *parent = nullptr, HSVThreshParams hsv_params = {});
   ~ImageProcessorWorker() {};
 
 signals:
@@ -19,9 +19,9 @@ signals:
 
 public slots:
   void processFrames(const Frame &frame1, const Frame &frame2);
-  void updateHSVParams(const int h_min, const int h_max, const int s_min, const int s_max, const int v_min, const int v_max);
+  void updateHSVParams(HSVThreshParams params);
   void updateThreshParams(int margin, int lowThresh, int minSize, int margin_2);
 
 private:
-  ImageProcessor processor{"core/stereo_data.npz"};
+  ImageProcessor processor;
 };

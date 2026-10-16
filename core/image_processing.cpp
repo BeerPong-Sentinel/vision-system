@@ -23,7 +23,7 @@ namespace {
   }
 }
 
-ImageProcessor::ImageProcessor(std::string stereo_data_path) {
+ImageProcessor::ImageProcessor(std::string stereo_data_path, HSVThreshParams hsv_params) : m_hsv_params(hsv_params) {
   cnpy::npz_t stereo_data = cnpy::npz_load(stereo_data_path);
 
   m_K_1 = npyDoubleToMat(stereo_data["K_1"]);
@@ -77,11 +77,8 @@ cv::Mat ImageProcessor::hsvThreshold(const cv::Mat& raw)
     cvtColor(raw, hsv_image, COLOR_BGR2HSV);
     GaussianBlur(hsv_image, hsv_img_gauss, cv::Size(5, 5), 0);
 
-    Scalar lower_bound = Scalar(m_hueMin, 40, 10);
-    Scalar upper_bound = Scalar(m_hueMax, 255, 255);
-
-    // Scalar lower_bound = Scalar(m_hueMin, m_saturationMin, m_valueMin);
-    // Scalar upper_bound = Scalar(m_hueMax, m_saturationMax, m_valueMax);
+    Scalar lower_bound = Scalar(m_hsv_params.h_min, m_hsv_params.s_min, m_hsv_params.v_min);
+    Scalar upper_bound = Scalar(m_hsv_params.h_max, m_hsv_params.s_max, m_hsv_params.v_max);
 
     Mat masked;
     inRange(hsv_img_gauss, lower_bound, upper_bound, masked);
@@ -176,20 +173,6 @@ cv::Point3f ImageProcessor::getBall3DCoords(cv::Point2f pos_1, cv::Point2f pos_2
       // std::cout << "W = 0" << std::endl;
     }
     return pos;
-}
-
-void ImageProcessor::updateHSVParams(const int h_min, const int h_max, const int s_min, const int s_max, const int v_min, const int v_max)
-{
-    m_hueMin = h_min;
-    m_hueMax = h_max;
-    m_saturationMin = s_min;
-    m_saturationMax = s_max;
-    m_valueMin = v_min;
-    m_valueMax = v_max;
-
-
-    std::cout << "m_hueMin = " << m_hueMin << std::endl;
-    std::cout << "m_hueMax = " << m_hueMax << std::endl;
 }
 
 void ImageProcessor::updateThreshParams(int margin, int lowThresh, int minSize, int margin_2)

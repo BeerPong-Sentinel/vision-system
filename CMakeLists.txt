@@ -1,8 +1,24 @@
 cmake_minimum_required(VERSION 3.5)
 project( BeerPongSentinelGUI )
 
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+include( FetchContent )
+
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+
+
+FetchContent_Declare(
+  yaml-cpp
+  GIT_REPOSITORY https://github.com/jbeder/yaml-cpp.git
+  GIT_TAG yaml-cpp-0.9.0 # Can be a tag (yaml-cpp-x.x.x), a commit hash, or a branch name (master)
+)
+
+FetchContent_MakeAvailable(yaml-cpp)
 
 set(SPINNAKER_ROOT "/Applications/Spinnaker/" CACHE PATH "Path to Spinnaker SDK installation (optional)")
 
@@ -71,5 +87,6 @@ target_link_libraries(
   ${SPINNAKER_GENAPI_LIB}
   ${SPINNAKER_GCBASE_LIB}
   ${CNPY_LIBRARY}
+  yaml-cpp::yaml-cpp
   z
 )

@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../camera_params.h"
+#include "../datatypes.h"
 #include <opencv2/opencv.hpp>
 #include <string>
 
 class ImageProcessor {
 public:
-  ImageProcessor(std::string stereo_data_path);
+  ImageProcessor(std::string stereo_data_path, HSVThreshParams hsv_params);
   ~ImageProcessor();
 
   cv::Mat greenThreshold(const cv::Mat& raw);
@@ -17,13 +17,11 @@ public:
 
   cv::Point3f getBall3DCoords(cv::Point2f pos_1, cv::Point2f pos_2);
 
-  void updateHSVParams(const int h_min, const int h_max, const int s_min, const int s_max, const int v_min, const int v_max);
+  void updateHSVParams(HSVThreshParams hsv_params){m_hsv_params = hsv_params;}
   void updateThreshParams(int margin, int lowThresh, int minSize, int margin_2);
   
 private:
-  int m_hueMin, m_hueMax;
-  int m_saturationMin, m_saturationMax;
-  int m_valueMin, m_valueMax;
+  HSVThreshParams m_hsv_params;
   int m_greenMargin = 5;
   int m_blueMargin = 50;
   int m_lowThresh = 10;

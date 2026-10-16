@@ -3,26 +3,33 @@
 #include <QtCore/QDebug>
 #include <opencv2/opencv.hpp>
 #include <format>
+#include "yaml-cpp/yaml.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(QWidget *parent, ConfigData config)
     : QMainWindow(parent),
-      ui(new Ui::MainWindow)
+      ui(new Ui::MainWindow),
+      camera_worker(this),
+      image_processing_worker(this, config.hsv)
 {
 
   ui->setupUi(this);
 
   qDebug() << "Connecting Labels";
 
-  camera_worker = std::make_unique<CameraWorker>(this);
-
-  connect(camera_worker.get(), &CameraWorker::newFrame, &image_processing_worker, &ImageProcessorWorker::processFrames);
+  connect(&camera_worker, &CameraWorker::newFrame, &image_processing_worker, &ImageProcessorWorker::processFrames);
   connect(&image_processing_worker, &ImageProcessorWorker::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
   connect(&image_processing_worker, &ImageProcessorWorker::newBallPosition, this, &MainWindow::updateBallPosition);
    auto updateHSV = [this]()
     {
-      image_processing_worker.updateHSVParams(ui->hueMin->value(), ui->hueMax->value(),
-                                               ui->saturationMin->value(), ui->saturationMax->value(),
-                                               ui->valueMin->value(), ui->valueMax->value());
+      HSVThreshParams new_params = {
+        ui->hueMin->value(),
+        ui->hueMax->value(),
+        ui->saturationMin->value(),
+        ui->saturationMax->value(),
+        ui->valueMin->value(),
+        ui->valueMax->value()
+      };
+      image_processing_worker.updateHSVParams(new_params);
     };
     connect(ui->hueMin, QOverload<int>::of(&QSpinBox::valueChanged), this, updateHSV);
     connect(ui->hueMax, QOverload<int>::of(&QSpinBox::valueChanged), this, updateHSV);
@@ -35,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->margin_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
           { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
 
-  camera_worker->start();
+  camera_worker.start();
 }
 
 MainWindow::~MainWindow()

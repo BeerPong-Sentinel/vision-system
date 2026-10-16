@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../camera_params.h"
+#include "../datatypes.h"
 #include "../core/camera_controller.h"
 #include <QtCore/QThread>
 #include <QTimer>

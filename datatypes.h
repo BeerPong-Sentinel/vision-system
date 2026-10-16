@@ -23,3 +23,21 @@ struct CameraDetails {
   std::string name;
   std::string deviceID;
 };
+
+struct HSVThreshParams {
+  int h_min;
+  int h_max;
+  int s_min;
+  int s_max;
+  int v_min;
+  int v_max;
+};
+
+struct CameraParams {
+  double fps;
+};
+
+struct ConfigData {
+  HSVThreshParams hsv;
+  CameraParams cam;
+};

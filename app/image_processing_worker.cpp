@@ -1,7 +1,9 @@
 #include "image_processing_worker.h"
 #include <QtCore/QDebug>
 
-ImageProcessorWorker::ImageProcessorWorker(QObject *parent) : QObject(parent)
+ImageProcessorWorker::ImageProcessorWorker(QObject *parent, HSVThreshParams hsv_params) : 
+  QObject(parent),
+  processor("core/stereo_data.npz", hsv_params)
 {
 
 }
@@ -29,8 +31,8 @@ void ImageProcessorWorker::processFrames(const Frame &frame1, const Frame &frame
   }
 }
 
-void ImageProcessorWorker::updateHSVParams(const int h_min, const int h_max, const int s_min, const int s_max, const int v_min, const int v_max) {
-  processor.updateHSVParams(h_min, h_max, s_min, s_max, v_min, v_max);
+void ImageProcessorWorker::updateHSVParams(HSVThreshParams params) {
+  processor.updateHSVParams(params);
   qDebug() << "Updated HSV Params";
 }
 

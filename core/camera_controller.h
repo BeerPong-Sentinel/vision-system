@@ -12,7 +12,7 @@
 #include "Spinnaker.h"
 #include <SpinGenApi/SpinnakerGenApi.h>
 
-#include "../camera_params.h"
+#include "../datatypes.h"
 
 #include <Spinnaker.h>
 #include <SpinGenApi/SpinnakerGenApi.h>
