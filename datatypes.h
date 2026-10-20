@@ -13,7 +13,8 @@ struct Frame
   cv::Mat raw;
   cv::Mat thresh;
   cv::Mat annotated;
-  std::chrono::steady_clock::time_point t;
+  int64_t cam_ts;
+  int64_t program_ts;
   cv::Point2f ballCenter;
   float ballRadius = 0;
   bool hasBall = false;

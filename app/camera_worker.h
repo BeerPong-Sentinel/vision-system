@@ -10,7 +10,7 @@ class CameraWorker : public QObject
 {
   Q_OBJECT
 public:
-    CameraWorker(QObject *parent = nullptr);
+    CameraWorker(QObject *parent = nullptr, CameraParams params = {});
     ~CameraWorker();
 
   void start();

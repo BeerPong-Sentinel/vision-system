@@ -1,7 +1,7 @@
 #include "camera_worker.h"
 #include <array>
 
-CameraWorker::CameraWorker(QObject *parent) : QObject(parent), timer(new QTimer(this)) {
+CameraWorker::CameraWorker(QObject *parent, CameraParams params) : QObject(parent), timer(new QTimer(this)) {
   connect(timer, &QTimer::timeout, this, &CameraWorker::grabFrame);
   cams_ = std::make_unique<CameraController>();
 }

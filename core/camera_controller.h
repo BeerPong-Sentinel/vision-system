@@ -43,4 +43,6 @@ private:
   Spinnaker::CameraList camList;
   Spinnaker::CameraPtr cam1;
   Spinnaker::CameraPtr cam2;
+
+  std::chrono::steady_clock::time_point m_program_start = std::chrono::steady_clock::now();
 };

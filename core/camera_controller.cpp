@@ -1,15 +1,49 @@
 #include "camera_controller.h"
+#include <stdexcept>
 
 namespace {
+  void ConfigureChunkData(Spinnaker::GenApi::INodeMap& nodeMap) {
+    std::cout << "Configuring Chunk Data" << std::endl;
+    Spinnaker::GenApi::CBooleanPtr ptrChunkModeActive = nodeMap.GetNode("ChunkModeActive");
+
+    if (!IsWritable(ptrChunkModeActive)) {
+      throw std::runtime_error("Couldn't activate Chunk Mode");
+    }
+
+    ptrChunkModeActive->SetValue(true);
+
+    // Retrieve the selector node
+    Spinnaker::GenApi::CEnumerationPtr ptrChunkSelector = nodeMap.GetNode("ChunkSelector");
+    if (!IsReadable(ptrChunkSelector)) {
+      throw std::runtime_error("Couldn't retrieve Chunk Selector");
+    }
+    
+    Spinnaker::GenApi::CEnumEntryPtr timestampEntry = ptrChunkSelector->GetEntryByName("Timestamp");
+
+    if (!IsReadable(timestampEntry)) {
+      throw std::runtime_error("Timestamp chunk not available");
+    }
+
+    ptrChunkSelector->SetIntValue(timestampEntry->GetValue());
+     
+    Spinnaker::GenApi::CBooleanPtr chunkEnable = nodeMap.GetNode("ChunkEnable");
+
+    if (!IsAvailable(chunkEnable) || !IsWritable(chunkEnable)) {
+      throw std::runtime_error("ChunkEnable not writable.");
+    }
+
+    chunkEnable->SetValue(true);
+  }
   void InitializeCam(Spinnaker::CameraPtr& cam, CameraDetails kCam, const Spinnaker::CameraList& camList) {
     cam= camList.GetBySerial(kCam.deviceID);
 
     if (cam)
     {
       cam->Init();
-
+      
       Spinnaker::GenApi::INodeMap& sNodeMap = cam->GetTLStreamNodeMap();
-
+      Spinnaker::GenApi::INodeMap& nodeMap = cam->GetNodeMap();
+      ConfigureChunkData(nodeMap);
       Spinnaker::GenApi::CEnumerationPtr ptrHandlingMode = sNodeMap.GetNode("StreamBufferHandlingMode");
       if (IsAvailable(ptrHandlingMode) && IsWritable(ptrHandlingMode))
       {
@@ -111,7 +145,17 @@ std::array<Frame, 2> CameraController::grabFrame()
           convertedImage->GetWidth(),
           CV_8UC3,
           convertedImage->GetData());
+
+      const Spinnaker::ChunkData& chunkData = cam1frame->GetChunkData(); 
+
+      // Timestamp is in nanoseconds
+      int64_t cam_ts = chunkData.GetTimestamp();
+      auto program_time = std::chrono::steady_clock::now();
+      auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(program_time - m_program_start);
+
       frames.at(0).raw = tmp.clone();
+      frames.at(0).cam_ts = cam_ts;
+      frames.at(0).program_ts = static_cast<int64_t>(duration.count());
     }
 
     cam1frame->Release();
@@ -135,8 +179,20 @@ std::array<Frame, 2> CameraController::grabFrame()
           convertedImage->GetWidth(),
           CV_8UC3,
           convertedImage->GetData());
+
+      const Spinnaker::ChunkData& chunkData = cam2frame->GetChunkData(); 
+
+      // Timestamp is in nanoseconds
+      int64_t cam_ts = chunkData.GetTimestamp();
+
+      auto program_time = std::chrono::steady_clock::now();
+      auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(program_time - m_program_start);
+
       frames.at(1).raw = tmp.clone();
+      frames.at(1).cam_ts = cam_ts;
+      frames.at(1).program_ts = static_cast<int64_t>(duration.count());
     }
+
     cam2frame->Release();
   }
   

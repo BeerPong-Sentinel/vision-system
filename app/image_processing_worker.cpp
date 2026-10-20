@@ -21,6 +21,12 @@ void ImageProcessorWorker::processFrames(const Frame &frame1, const Frame &frame
   processor.detectBall(processed1.raw, processed1.thresh, processed1.hasBall, processed1.ballCenter, processed1.ballRadius, processed1.annotated);
   processor.detectBall(processed2.raw, processed2.thresh, processed2.hasBall, processed2.ballCenter, processed2.ballRadius, processed2.annotated);
 
+  processed1.cam_ts = frame1.cam_ts;
+  processed1.program_ts = frame1.program_ts;
+
+  processed2.cam_ts = frame2.cam_ts;
+  processed2.program_ts = frame2.program_ts;
+
   emit newProcessedFrame(processed1, processed2);
 
   // Space Transformation

@@ -8,7 +8,7 @@
 MainWindow::MainWindow(QWidget *parent, ConfigData config)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      camera_worker(this),
+      camera_worker(this, config.cam),
       image_processing_worker(this, config.hsv)
 {
 
@@ -60,6 +60,9 @@ void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2)
 {
   int index = ui->imagedisptype->currentIndex();
   
+  // std::cout << "Cam 1 cam_ts: " << frame1.cam_ts << std::endl;
+  // std::cout << "Cam 1 program_ts: " << frame1.program_ts << std::endl;
+
   QImage qimg1, qimg2;
 
   // Decide Which Image to Display
