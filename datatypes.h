@@ -36,6 +36,7 @@ struct HSVThreshParams {
 
 struct CameraParams {
   double fps;
+  double exposure_time;
 };
 
 struct ConfigData {

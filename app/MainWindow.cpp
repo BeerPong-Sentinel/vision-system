@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <format>
 #include "yaml-cpp/yaml.h"
+#include <filesystem>
 
 MainWindow::MainWindow(QWidget *parent, ConfigData config)
     : QMainWindow(parent),
@@ -25,6 +26,8 @@ MainWindow::MainWindow(QWidget *parent, ConfigData config)
   connect(&camera_worker, &CameraWorker::newFrame, &image_processing_worker, &ImageProcessorWorker::processFrames);
   connect(&image_processing_worker, &ImageProcessorWorker::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
   connect(&image_processing_worker, &ImageProcessorWorker::newBallPosition, this, &MainWindow::updateBallPosition);
+  connect(ui->cameraCapture, &QPushButton::clicked, this, &MainWindow::captureImage);
+
    auto updateHSV = [this]()
     {
       HSVThreshParams new_params = {
@@ -48,7 +51,9 @@ MainWindow::MainWindow(QWidget *parent, ConfigData config)
   connect(ui->margin_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
           { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
 
-  camera_worker.start();
+  camera_worker.start(config);
+
+  ui->captureNum->setText(QString::number(cameraCaptureNum));
 }
 
 MainWindow::~MainWindow()
@@ -64,6 +69,8 @@ void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2)
   // std::cout << "Cam 1 program_ts: " << frame1.program_ts << std::endl;
 
   QImage qimg1, qimg2;
+  latestFrame1 = frame1.raw.clone();
+  latestFrame2 = frame2.raw.clone();
 
   // Decide Which Image to Display
   if (index == 0)
@@ -101,4 +108,26 @@ void MainWindow::updateBallPosition(std::optional<cv::Point3f> pos) {
   } else {
     ui->ball_pos->setText("(__, __, __)");
   }
+}
+
+void MainWindow::captureImage()
+{
+  namespace fs = std::filesystem;
+  const fs::path dir = fs::path(PROJECT_DIR) / "CalibrationImages";
+  fs::create_directories(dir);
+
+  std::stringstream ss_1;
+  std::stringstream ss_2;
+  ss_1 << (dir / kCam1.name).string() << "_" << cameraCaptureNum << ".png";
+  ss_2 << (dir / kCam2.name).string() << "_" << cameraCaptureNum << ".png";
+
+
+
+  if (!cv::imwrite(ss_1.str(), latestFrame1))
+    qDebug() << "Failed to write" << QString::fromStdString(ss_1.str());
+  if (!cv::imwrite(ss_2.str(), latestFrame2))
+    qDebug() << "Failed to write" << QString::fromStdString(ss_2.str());
+
+  cameraCaptureNum++;
+  ui->captureNum->setText(QString::number(cameraCaptureNum));
 }

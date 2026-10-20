@@ -1,12 +1,15 @@
 #include "camera_controller.h"
 #include <stdexcept>
 
-namespace {
-  void ConfigureChunkData(Spinnaker::GenApi::INodeMap& nodeMap) {
+namespace
+{
+  void ConfigureChunkData(Spinnaker::GenApi::INodeMap &nodeMap)
+  {
     std::cout << "Configuring Chunk Data" << std::endl;
     Spinnaker::GenApi::CBooleanPtr ptrChunkModeActive = nodeMap.GetNode("ChunkModeActive");
 
-    if (!IsWritable(ptrChunkModeActive)) {
+    if (!IsWritable(ptrChunkModeActive))
+    {
       throw std::runtime_error("Couldn't activate Chunk Mode");
     }
 
@@ -14,45 +17,117 @@ namespace {
 
     // Retrieve the selector node
     Spinnaker::GenApi::CEnumerationPtr ptrChunkSelector = nodeMap.GetNode("ChunkSelector");
-    if (!IsReadable(ptrChunkSelector)) {
+    if (!IsReadable(ptrChunkSelector))
+    {
       throw std::runtime_error("Couldn't retrieve Chunk Selector");
     }
-    
+
     Spinnaker::GenApi::CEnumEntryPtr timestampEntry = ptrChunkSelector->GetEntryByName("Timestamp");
 
-    if (!IsReadable(timestampEntry)) {
+    if (!IsReadable(timestampEntry))
+    {
       throw std::runtime_error("Timestamp chunk not available");
     }
 
     ptrChunkSelector->SetIntValue(timestampEntry->GetValue());
-     
+
     Spinnaker::GenApi::CBooleanPtr chunkEnable = nodeMap.GetNode("ChunkEnable");
 
-    if (!IsAvailable(chunkEnable) || !IsWritable(chunkEnable)) {
+    if (!IsAvailable(chunkEnable) || !IsWritable(chunkEnable))
+    {
       throw std::runtime_error("ChunkEnable not writable.");
     }
 
     chunkEnable->SetValue(true);
   }
-  void InitializeCam(Spinnaker::CameraPtr& cam, CameraDetails kCam, const Spinnaker::CameraList& camList) {
-    cam= camList.GetBySerial(kCam.deviceID);
+
+  void ConfigureCameraControls(Spinnaker::GenApi::INodeMap &nodeMap, ConfigData config)
+  {
+    // Disable automatic exposure.
+    Spinnaker::GenApi::CEnumerationPtr exposureAuto = nodeMap.GetNode("ExposureAuto");
+
+    if (IsAvailable(exposureAuto) && IsWritable(exposureAuto))
+    {
+      Spinnaker::GenApi::CEnumEntryPtr off = exposureAuto->GetEntryByName("Off");
+
+      if (IsAvailable(off) & IsReadable(off))
+      {
+        exposureAuto->SetIntValue(off->GetValue());
+      }
+      else
+      {
+        throw std::runtime_error("ExposureAuto Off is unavailable");
+      }
+    }
+
+    // Set exposure time in microseconds.
+    Spinnaker::GenApi::CFloatPtr exposure = nodeMap.GetNode("ExposureTime");
+
+    if (!IsAvailable(exposure) || !IsWritable(exposure))
+    {
+      throw std::runtime_error("ExposureTime is not writable");
+    }
+
+    if (config.cam.exposure_time < exposure->GetMin() || config.cam.exposure_time > exposure->GetMax())
+    {
+      throw std::out_of_range("Exposure time is outside camera limits");
+    }
+
+    exposure->SetValue(config.cam.exposure_time);
+
+    // Enable manual frame-rate control.
+    Spinnaker::GenApi::CBooleanPtr frameRateEnable = nodeMap.GetNode("AcquisitionFrameRateEnable");
+
+    if (IsAvailable(frameRateEnable) && IsWritable(frameRateEnable))
+    {
+      frameRateEnable->SetValue(true);
+    }
+
+    // Set requested FPS.
+    Spinnaker::GenApi::CFloatPtr frameRate = nodeMap.GetNode("AcquisitionFrameRate");
+
+    if (!IsAvailable(frameRate) || !IsWritable(frameRate))
+    {
+      throw std::runtime_error(
+          "AcquisitionFrameRate is not writable");
+    }
+
+    if (config.cam.fps < frameRate->GetMin() || config.cam.fps > frameRate->GetMax())
+    {
+      throw std::out_of_range("FPS is outside camera limits");
+    }
+
+    frameRate->SetValue(config.cam.fps);
+
+    std::cout << "Camera controls configured: "
+              << exposure->GetValue() << " us exposure, "
+              << frameRate->GetValue() << " FPS"
+              << std::endl;
+  }
+
+  void InitializeCam(Spinnaker::CameraPtr &cam, CameraDetails kCam, const Spinnaker::CameraList &camList, ConfigData config)
+  {
+    cam = camList.GetBySerial(kCam.deviceID);
 
     if (cam)
     {
       cam->Init();
-      
-      Spinnaker::GenApi::INodeMap& sNodeMap = cam->GetTLStreamNodeMap();
-      Spinnaker::GenApi::INodeMap& nodeMap = cam->GetNodeMap();
+
+      Spinnaker::GenApi::INodeMap &sNodeMap = cam->GetTLStreamNodeMap();
+      Spinnaker::GenApi::INodeMap &nodeMap = cam->GetNodeMap();
       ConfigureChunkData(nodeMap);
       Spinnaker::GenApi::CEnumerationPtr ptrHandlingMode = sNodeMap.GetNode("StreamBufferHandlingMode");
       if (IsAvailable(ptrHandlingMode) && IsWritable(ptrHandlingMode))
       {
-          Spinnaker::GenApi::CEnumEntryPtr ptrHandlingModeEntry = ptrHandlingMode->GetEntryByName("NewestOnly");
-          if (IsAvailable(ptrHandlingModeEntry) && IsReadable(ptrHandlingModeEntry))
-          {
-              ptrHandlingMode->SetIntValue(ptrHandlingModeEntry->GetValue());
-          }
+        Spinnaker::GenApi::CEnumEntryPtr ptrHandlingModeEntry = ptrHandlingMode->GetEntryByName("NewestOnly");
+        if (IsAvailable(ptrHandlingModeEntry) && IsReadable(ptrHandlingModeEntry))
+        {
+          ptrHandlingMode->SetIntValue(ptrHandlingModeEntry->GetValue());
+        }
       }
+
+      ConfigureCameraControls(nodeMap, config);
+
       cam->BeginAcquisition();
 
       std::cout << "Successfully Initialized" << kCam.name << std::endl;
@@ -64,13 +139,12 @@ namespace {
   }
 }
 
-
 CameraController::~CameraController()
 {
   stopCameras();
 }
 
-void CameraController::startCameras()
+void CameraController::startCameras(ConfigData config)
 {
   // Retrieve singleton reference to system object
   system = Spinnaker::System::GetInstance();
@@ -86,10 +160,9 @@ void CameraController::startCameras()
   {
     std::cerr << "Not enough cameras!" << std::endl;
   }
-  
-  InitializeCam(cam1, kCam1, camList);
-  InitializeCam(cam2, kCam2, camList);
 
+  InitializeCam(cam1, kCam1, camList, config);
+  InitializeCam(cam2, kCam2, camList, config);
 }
 
 void CameraController::stopCameras()
@@ -108,7 +181,11 @@ void CameraController::stopCameras()
   cam1 = nullptr;
   cam2 = nullptr;
 
-  system->ReleaseInstance();
+  if (system)
+  {
+    system->ReleaseInstance();
+    system = nullptr;
+  }
 }
 
 std::array<Frame, 2> CameraController::grabFrame()
@@ -146,7 +223,7 @@ std::array<Frame, 2> CameraController::grabFrame()
           CV_8UC3,
           convertedImage->GetData());
 
-      const Spinnaker::ChunkData& chunkData = cam1frame->GetChunkData(); 
+      const Spinnaker::ChunkData &chunkData = cam1frame->GetChunkData();
 
       // Timestamp is in nanoseconds
       int64_t cam_ts = chunkData.GetTimestamp();
@@ -180,7 +257,7 @@ std::array<Frame, 2> CameraController::grabFrame()
           CV_8UC3,
           convertedImage->GetData());
 
-      const Spinnaker::ChunkData& chunkData = cam2frame->GetChunkData(); 
+      const Spinnaker::ChunkData &chunkData = cam2frame->GetChunkData();
 
       // Timestamp is in nanoseconds
       int64_t cam_ts = chunkData.GetTimestamp();
@@ -195,6 +272,6 @@ std::array<Frame, 2> CameraController::grabFrame()
 
     cam2frame->Release();
   }
-  
+
   return frames;
 }

@@ -24,9 +24,12 @@ public:
 private slots:
   void updateCameraDisplay(const Frame &frame1, const Frame &frame2);
   void updateBallPosition(std::optional<cv::Point3f> pos);
+  void captureImage();
 
 private:
   Ui::MainWindow *ui;
   CameraWorker camera_worker;
   ImageProcessorWorker image_processing_worker;
+  cv::Mat latestFrame1, latestFrame2;
+  int cameraCaptureNum = 0;
 };

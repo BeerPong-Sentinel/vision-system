@@ -248,7 +248,7 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>288</x>
+      <x>218</x>
       <y>450</y>
       <width>71</width>
       <height>20</height>
@@ -261,7 +261,7 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>278</x>
+      <x>208</x>
       <y>470</y>
       <width>81</width>
       <height>20</height>
@@ -274,7 +274,7 @@
    <widget class="QSpinBox" name="margin_val">
     <property name="geometry">
      <rect>
-      <x>370</x>
+      <x>300</x>
       <y>440</y>
       <width>101</width>
       <height>25</height>
@@ -284,7 +284,7 @@
    <widget class="QSpinBox" name="low_thresh_val">
     <property name="geometry">
      <rect>
-      <x>370</x>
+      <x>300</x>
       <y>470</y>
       <width>101</width>
       <height>25</height>
@@ -294,7 +294,7 @@
    <widget class="QSpinBox" name="min_size_val">
     <property name="geometry">
      <rect>
-      <x>370</x>
+      <x>300</x>
       <y>500</y>
       <width>101</width>
       <height>25</height>
@@ -304,7 +304,7 @@
    <widget class="QLabel" name="label_8">
     <property name="geometry">
      <rect>
-      <x>300</x>
+      <x>230</x>
       <y>500</y>
       <width>49</width>
       <height>16</height>
@@ -343,7 +343,7 @@
    <widget class="QSpinBox" name="margin_val_2">
     <property name="geometry">
      <rect>
-      <x>372</x>
+      <x>302</x>
       <y>520</y>
       <width>101</width>
       <height>25</height>
@@ -353,7 +353,7 @@
    <widget class="QLabel" name="label_10">
     <property name="geometry">
      <rect>
-      <x>290</x>
+      <x>220</x>
       <y>520</y>
       <width>71</width>
       <height>20</height>
@@ -389,6 +389,45 @@
      <string/>
     </property>
    </widget>
+   <widget class="QPushButton" name="cameraCapture">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>470</y>
+      <width>111</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Camera Capture</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="captureNum">
+    <property name="geometry">
+     <rect>
+      <x>700</x>
+      <y>500</y>
+      <width>41</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="captureNum_2">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>500</y>
+      <width>81</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Next Capture:</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -396,7 +435,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>30</height>
+     <height>33</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

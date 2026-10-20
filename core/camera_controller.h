@@ -33,7 +33,7 @@ public:
   CameraController() {};
   ~CameraController();
 
-  void startCameras();
+  void startCameras(ConfigData config);
   void stopCameras();
 
   std::array<Frame, 2> grabFrame();
@@ -44,5 +44,6 @@ private:
   Spinnaker::CameraPtr cam1;
   Spinnaker::CameraPtr cam2;
 
+  CameraParams m_params;
   std::chrono::steady_clock::time_point m_program_start = std::chrono::steady_clock::now();
 };

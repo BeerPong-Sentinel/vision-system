@@ -13,7 +13,7 @@ public:
     CameraWorker(QObject *parent = nullptr, CameraParams params = {});
     ~CameraWorker();
 
-  void start();
+  void start(ConfigData config);
   void stop();
 
 signals:
