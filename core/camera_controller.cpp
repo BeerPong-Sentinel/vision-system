@@ -41,7 +41,7 @@ namespace
     chunkEnable->SetValue(true);
   }
 
-  void ConfigureCameraControls(Spinnaker::GenApi::INodeMap &nodeMap, ConfigData config)
+  void ConfigureCameraControls(Spinnaker::GenApi::INodeMap &nodeMap, CameraParams config)
   {
     // Disable automatic exposure.
     Spinnaker::GenApi::CEnumerationPtr exposureAuto = nodeMap.GetNode("ExposureAuto");
@@ -68,12 +68,12 @@ namespace
       throw std::runtime_error("ExposureTime is not writable");
     }
 
-    if (config.cam.exposure_time < exposure->GetMin() || config.cam.exposure_time > exposure->GetMax())
+    if (config.exposure_time < exposure->GetMin() || config.exposure_time > exposure->GetMax())
     {
       throw std::out_of_range("Exposure time is outside camera limits");
     }
 
-    exposure->SetValue(config.cam.exposure_time);
+    exposure->SetValue(config.exposure_time);
 
     // Enable manual frame-rate control.
     Spinnaker::GenApi::CBooleanPtr frameRateEnable = nodeMap.GetNode("AcquisitionFrameRateEnable");
@@ -92,12 +92,12 @@ namespace
           "AcquisitionFrameRate is not writable");
     }
 
-    if (config.cam.fps < frameRate->GetMin() || config.cam.fps > frameRate->GetMax())
+    if (config.fps < frameRate->GetMin() || config.fps > frameRate->GetMax())
     {
       throw std::out_of_range("FPS is outside camera limits");
     }
 
-    frameRate->SetValue(config.cam.fps);
+    frameRate->SetValue(config.fps);
 
     std::cout << "Camera controls configured: "
               << exposure->GetValue() << " us exposure, "
@@ -105,7 +105,7 @@ namespace
               << std::endl;
   }
 
-  void InitializeCam(Spinnaker::CameraPtr &cam, CameraDetails kCam, const Spinnaker::CameraList &camList, ConfigData config)
+  void InitializeCam(Spinnaker::CameraPtr &cam, CameraDetails kCam, const Spinnaker::CameraList &camList, CameraParams config)
   {
     cam = camList.GetBySerial(kCam.deviceID);
 
@@ -139,12 +139,15 @@ namespace
   }
 }
 
+CameraController::CameraController(CameraParams params) : m_params(params) {
+
+}
 CameraController::~CameraController()
 {
   stopCameras();
 }
 
-void CameraController::startCameras(ConfigData config)
+void CameraController::startCameras()
 {
   // Retrieve singleton reference to system object
   system = Spinnaker::System::GetInstance();
@@ -161,8 +164,8 @@ void CameraController::startCameras(ConfigData config)
     std::cerr << "Not enough cameras!" << std::endl;
   }
 
-  InitializeCam(cam1, kCam1, camList, config);
-  InitializeCam(cam2, kCam2, camList, config);
+  InitializeCam(cam1, kCam1, camList, m_params);
+  InitializeCam(cam2, kCam2, camList, m_params);
 }
 
 void CameraController::stopCameras()
@@ -201,7 +204,7 @@ std::array<Frame, 2> CameraController::grabFrame()
   frame2.raw = cv::Mat(image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
 
   std::array<Frame, 2> frames = {frame1, frame2};
-
+  
   if (cam1)
   {
 
@@ -227,12 +230,13 @@ std::array<Frame, 2> CameraController::grabFrame()
 
       // Timestamp is in nanoseconds
       int64_t cam_ts = chunkData.GetTimestamp();
+      std::cout << "Frame 1 Time: " << cam_ts << std::endl;
       auto program_time = std::chrono::steady_clock::now();
-      auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(program_time - m_program_start);
+      auto program_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(program_time - m_program_start);
 
       frames.at(0).raw = tmp.clone();
       frames.at(0).cam_ts = cam_ts;
-      frames.at(0).program_ts = static_cast<int64_t>(duration.count());
+      frames.at(0).program_ts = static_cast<int64_t>(program_duration.count());
     }
 
     cam1frame->Release();
@@ -268,6 +272,8 @@ std::array<Frame, 2> CameraController::grabFrame()
       frames.at(1).raw = tmp.clone();
       frames.at(1).cam_ts = cam_ts;
       frames.at(1).program_ts = static_cast<int64_t>(duration.count());
+
+      std::cout << "Frame 1 Time: " << cam_ts << std::endl;
     }
 
     cam2frame->Release();

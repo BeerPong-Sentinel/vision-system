@@ -13,7 +13,7 @@ public:
     CameraWorker(QObject *parent = nullptr, CameraParams params = {});
     ~CameraWorker();
 
-  void start(ConfigData config);
+  void start();
   void stop();
 
 signals:
@@ -25,4 +25,5 @@ private slots:
 private:
   std::unique_ptr<CameraController> cams_;
   QTimer *timer;
+  CameraParams m_params;
 };

@@ -19,7 +19,9 @@
 #include <opencv2/opencv.hpp>
 #include <string>
 #include <array>
+#include "../lib/json.hpp"
 
+#include <fstream>
 
 inline const CameraDetails kCam1 = {"Camera_1", "24292737"};
 inline const CameraDetails kCam2 = {"Camera_2", "24292752"}; 
@@ -30,10 +32,10 @@ inline const CameraDetails kCam2 = {"Camera_2", "24292752"};
 class CameraController {
 
 public:
-  CameraController() {};
+  CameraController(CameraParams params = {});
   ~CameraController();
 
-  void startCameras(ConfigData config);
+  void startCameras();
   void stopCameras();
 
   std::array<Frame, 2> grabFrame();
@@ -46,4 +48,5 @@ private:
 
   CameraParams m_params;
   std::chrono::steady_clock::time_point m_program_start = std::chrono::steady_clock::now();
+  std::ofstream frame_logs{"logs/frames.json"};
 };

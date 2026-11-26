@@ -3,8 +3,11 @@
 #include <QtCore/QDebug>
 #include <opencv2/opencv.hpp>
 #include <format>
+#include <iostream>
 #include "yaml-cpp/yaml.h"
 #include <filesystem>
+
+using json = nlohmann::json;
 
 MainWindow::MainWindow(QWidget *parent, ConfigData config)
     : QMainWindow(parent),
@@ -51,9 +54,19 @@ MainWindow::MainWindow(QWidget *parent, ConfigData config)
   connect(ui->margin_val, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]()
           { image_processing_worker.updateThreshParams(ui->margin_val->value(), ui->low_thresh_val->value(), ui->min_size_val->value(), ui->margin_val_2->value()); });
 
-  camera_worker.start(config);
+  camera_worker.start();
 
   ui->captureNum->setText(QString::number(cameraCaptureNum));
+
+  connect(ui->EnablePipelineButton, &QPushButton::toggled, this, [this](bool checked) {
+    if (checked) {
+      camera_worker.stop();
+      ui->EnablePipelineButton->setText("Stop");
+    } else {
+      camera_worker.start();
+      ui->EnablePipelineButton->setText("Start");
+    }
+  });
 }
 
 MainWindow::~MainWindow()
@@ -113,7 +126,7 @@ void MainWindow::updateBallPosition(std::optional<cv::Point3f> pos) {
 void MainWindow::captureImage()
 {
   namespace fs = std::filesystem;
-  const fs::path dir = fs::path(PROJECT_DIR) / "CalibrationImages";
+  const fs::path dir = fs::path("CalibrationImages"); 
   fs::create_directories(dir);
 
   std::stringstream ss_1;

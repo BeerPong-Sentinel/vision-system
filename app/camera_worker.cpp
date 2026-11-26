@@ -4,7 +4,8 @@
 CameraWorker::CameraWorker(QObject *parent, CameraParams params)
     : QObject(parent),
       cams_(std::make_unique<CameraController>()),
-      timer(new QTimer(this)) {
+      timer(new QTimer(this)),
+      m_params(params){
   connect(timer, &QTimer::timeout, this, &CameraWorker::grabFrame);
 }
 
@@ -12,12 +13,13 @@ CameraWorker::~CameraWorker() {
   if (cams_) cams_->stopCameras();
 }
 
-void CameraWorker::start(ConfigData config) {
-  cams_->startCameras(config);
+void CameraWorker::start() {
+  cams_->startCameras();
   timer->start(1);
 }
 
 void CameraWorker::stop() {
+  std::cout << "Stopping Camera Capture" << std::endl;
   cams_->stopCameras();
 }
 

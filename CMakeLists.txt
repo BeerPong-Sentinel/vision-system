@@ -70,6 +70,7 @@ add_executable(BeerPongSentinelGUI
     core/camera_controller.h
     core/image_processing.cpp
     core/image_processing.h
+    lib/json.hpp
 )
 
 target_include_directories(BeerPongSentinelGUI PRIVATE 
