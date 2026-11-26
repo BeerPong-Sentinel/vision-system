@@ -1,8 +1,9 @@
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+import sys
 
 # 1. Load the image file into a NumPy array
-img = mpimg.imread('../sandbox/images/Camera_1_1.png')
+img = mpimg.imread(sys.argv[1])
 
 # 2. Render the array data as an image
 plt.imshow(img)

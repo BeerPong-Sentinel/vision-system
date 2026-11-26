@@ -5,11 +5,19 @@ import numpy as np
 import sys
 
 # Define ChArUco board parameters
-SQUARX = 11  # Number of squares in X direction
-SQUARY = 7  # Number of squares in Y direction
-SQUARE_LENGTH = 0.024  # Side length of a square in meters
-MARKER_LENGTH = 0.019  # Side length of an ArUco marker in meters
-DICTIONARY_ID = aruco.DICT_6X6_250
+# SQUARX = 11  # Number of squares in X direction
+# SQUARY = 7  # Number of squares in Y direction
+# SQUARE_LENGTH = 0.024  # Side length of a square in meters
+# MARKER_LENGTH = 0.019  # Side length of an ArUco marker in meters
+# DICTIONARY_ID = aruco.DICT_6X6_250
+
+# Amjad's teams board
+
+SQUARX = 8
+SQUARY = 5
+SQUARE_LENGTH = 0.04788
+MARKER_LENGTH = 0.03596
+DICTIONARY_ID = aruco.DICT_4X4_50
 
 # Setup ArUco dictionary and board
 dictionary = aruco.getPredefinedDictionary(DICTIONARY_ID)
@@ -35,7 +43,7 @@ def extract_pts(images):
             # Match 2D image points to 3D object points using the board layout
             obj_pts, img_pts = board.matchImagePoints(charuco_corners, charuco_ids)
             
-            if len(obj_pts) > 10:
+            if len(obj_pts) > 8:
                 all_object_points.append(obj_pts)
                 all_image_points.append(img_pts)
     return all_object_points, all_image_points, image_size
