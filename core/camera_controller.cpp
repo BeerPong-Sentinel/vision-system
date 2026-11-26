@@ -170,6 +170,7 @@ void CameraController::startCameras()
 
 void CameraController::stopCameras()
 {
+  std::cout << "Ending Acquisition" << std::endl;
   camList.Clear();
   if (cam1 && cam1->IsStreaming())
     cam1->EndAcquisition();
@@ -273,7 +274,7 @@ std::array<Frame, 2> CameraController::grabFrame()
       frames.at(1).cam_ts = cam_ts;
       frames.at(1).program_ts = static_cast<int64_t>(duration.count());
 
-      std::cout << "Frame 1 Time: " << cam_ts << std::endl;
+      std::cout << "Frame 2 Time: " << cam_ts << std::endl;
     }
 
     cam2frame->Release();

@@ -8,5 +8,5 @@ thresholding:
     sat_max: 255
 cam:
   fps: 120
-  exposure_time: 5000
+  exposure_time: 2000
   
