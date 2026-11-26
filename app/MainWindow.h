@@ -5,6 +5,7 @@
 // Import Qt Nodes
 #include "camera_worker.h"
 #include "image_processing_worker.h"
+#include "pipeline_worker.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -27,9 +28,15 @@ private slots:
   void captureImage();
 
 private:
+  void pipelineStart();
+  void pipelineStop();
+
   Ui::MainWindow *ui;
   CameraWorker camera_worker;
   ImageProcessorWorker image_processing_worker;
+  PipelineWorker pipeline_worker;
   cv::Mat latestFrame1, latestFrame2;
   int cameraCaptureNum = 0;
+
+  QThread m_pipelineThread;
 };

@@ -65,6 +65,8 @@ add_executable(BeerPongSentinelGUI
     app/camera_worker.cpp
     app/image_processing_worker.h
     app/image_processing_worker.cpp
+    app/pipeline_worker.cpp
+    app/pipeline_worker.h
 
     core/camera_controller.cpp
     core/camera_controller.h

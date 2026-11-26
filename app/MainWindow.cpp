@@ -13,7 +13,8 @@ MainWindow::MainWindow(QWidget *parent, ConfigData config)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
       camera_worker(this, config.cam),
-      image_processing_worker(this, config.hsv)
+      image_processing_worker(this, config.hsv),
+      pipeline_worker(nullptr, config)
 {
 
   ui->setupUi(this);
@@ -25,6 +26,12 @@ MainWindow::MainWindow(QWidget *parent, ConfigData config)
   ui->valueMax->setValue(config.hsv.v_max);
 
   qDebug() << "Connecting Labels";
+
+  
+  pipeline_worker.moveToThread(&m_pipelineThread);
+  connect(&m_pipelineThread, &QThread::started, &pipeline_worker, &PipelineWorker::startCapture);
+  connect(&pipeline_worker, &PipelineWorker::newFrame, this, &MainWindow::updateCameraDisplay);
+  connect(&pipeline_worker, &PipelineWorker::finished, &m_pipelineThread, &QThread::quit);
 
   connect(&camera_worker, &CameraWorker::newFrame, &image_processing_worker, &ImageProcessorWorker::processFrames);
   connect(&image_processing_worker, &ImageProcessorWorker::newProcessedFrame, this, &MainWindow::updateCameraDisplay);
@@ -61,8 +68,10 @@ MainWindow::MainWindow(QWidget *parent, ConfigData config)
   connect(ui->EnablePipelineButton, &QPushButton::toggled, this, [this](bool checked) {
     if (checked) {
       camera_worker.stop();
+      pipelineStart();
       ui->EnablePipelineButton->setText("Stop");
     } else {
+      pipelineStop();
       camera_worker.start();
       ui->EnablePipelineButton->setText("Start");
     }
@@ -71,7 +80,7 @@ MainWindow::MainWindow(QWidget *parent, ConfigData config)
 
 MainWindow::~MainWindow()
 {
-
+  pipelineStop();
 }
 
 void MainWindow::updateCameraDisplay(const Frame &frame1, const Frame &frame2)
@@ -143,4 +152,22 @@ void MainWindow::captureImage()
 
   cameraCaptureNum++;
   ui->captureNum->setText(QString::number(cameraCaptureNum));
+}
+
+void MainWindow::pipelineStart() {
+  if (!m_pipelineThread.isRunning()) {
+    std::cout << "Starting Pipeline Thread" << std::endl;
+    m_pipelineThread.start(); 
+  } else {
+    std::cout <<"Pipeline Thread Still Running" << std::endl;
+  }
+}
+
+void MainWindow::pipelineStop() {
+  if (m_pipelineThread.isRunning()) {
+    std::cout <<"Ending Pipeline Thread" << std::endl;
+    m_pipelineThread.requestInterruption();
+    m_pipelineThread.quit();
+    m_pipelineThread.wait();
+  }
 }

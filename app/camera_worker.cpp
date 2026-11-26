@@ -20,6 +20,7 @@ void CameraWorker::start() {
 void CameraWorker::stop() {
   std::cout << "Stopping Camera Capture" << std::endl;
   cams_->stopCameras();
+  timer->stop();
 }
 
 void CameraWorker::grabFrame() {
