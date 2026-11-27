@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent, ConfigData config)
       ui(new Ui::MainWindow),
       camera_worker(this, config.cam),
       image_processing_worker(this, config.hsv),
-      pipeline_worker(nullptr, config)
+      pipeline_worker(nullptr, &config)
 {
 
   ui->setupUi(this);

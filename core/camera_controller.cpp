@@ -1,7 +1,9 @@
 #include "camera_controller.h"
 #include <stdexcept>
 #include <chrono>
-#include <future>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace
 {
@@ -146,7 +148,6 @@ namespace
 
     // Start trigger on Line0
     triggerMode->SetIntValue(triggerMode->GetEntryByName("On")->GetValue());
-
   }
 
   // Software control of camera parameters; kept for testing
@@ -248,41 +249,42 @@ namespace
     }
   }
 
-}
-
-// Initialize using software control of camera parameters; kept for testing
-void InitializeCamPC(Spinnaker::CameraPtr &cam, CameraDetails kCam, const Spinnaker::CameraList &camList, CameraParams config)
-{
-  cam = camList.GetBySerial(kCam.deviceID);
-
-  if (cam)
+  // Initialize using software control of camera parameters; kept for testing
+  void InitializeCamPC(Spinnaker::CameraPtr &cam, CameraDetails kCam, const Spinnaker::CameraList &camList, CameraParams config)
   {
-    cam->Init();
+    cam = camList.GetBySerial(kCam.deviceID);
 
-    Spinnaker::GenApi::INodeMap &sNodeMap = cam->GetTLStreamNodeMap();
-    Spinnaker::GenApi::INodeMap &nodeMap = cam->GetNodeMap();
-    ConfigureChunkData(nodeMap);
-    Spinnaker::GenApi::CEnumerationPtr ptrHandlingMode = sNodeMap.GetNode("StreamBufferHandlingMode");
-    if (IsAvailable(ptrHandlingMode) && IsWritable(ptrHandlingMode))
+    if (cam)
     {
-      Spinnaker::GenApi::CEnumEntryPtr ptrHandlingModeEntry = ptrHandlingMode->GetEntryByName("NewestOnly");
-      if (IsAvailable(ptrHandlingModeEntry) && IsReadable(ptrHandlingModeEntry))
+      cam->Init();
+
+      Spinnaker::GenApi::INodeMap &sNodeMap = cam->GetTLStreamNodeMap();
+      Spinnaker::GenApi::INodeMap &nodeMap = cam->GetNodeMap();
+      ConfigureChunkData(nodeMap);
+      Spinnaker::GenApi::CEnumerationPtr ptrHandlingMode = sNodeMap.GetNode("StreamBufferHandlingMode");
+      if (IsAvailable(ptrHandlingMode) && IsWritable(ptrHandlingMode))
       {
-        ptrHandlingMode->SetIntValue(ptrHandlingModeEntry->GetValue());
+        Spinnaker::GenApi::CEnumEntryPtr ptrHandlingModeEntry = ptrHandlingMode->GetEntryByName("NewestOnly");
+        if (IsAvailable(ptrHandlingModeEntry) && IsReadable(ptrHandlingModeEntry))
+        {
+          ptrHandlingMode->SetIntValue(ptrHandlingModeEntry->GetValue());
+        }
       }
+
+      ConfigureCameraControlsPC(nodeMap, config);
+
+      cam->BeginAcquisition();
+
+      std::cout << "Successfully Initialized" << kCam.name << std::endl;
     }
-
-    ConfigureCameraControlsPC(nodeMap, config);
-
-    cam->BeginAcquisition();
-
-    std::cout << "Successfully Initialized" << kCam.name << std::endl;
-  }
-  else
-  {
-    std::cout << "Could Not Connect to " << kCam.name << std::endl;
+    else
+    {
+      std::cout << "Could Not Connect to " << kCam.name << std::endl;
+    }
   }
 }
+
+
 
 CameraController::CameraController(CameraParams params) : m_params(params)
 {
@@ -290,6 +292,158 @@ CameraController::CameraController(CameraParams params) : m_params(params)
 CameraController::~CameraController()
 {
   stopCameras();
+}
+
+void CameraController::startWorkers()
+{
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_stopWorkers = false;
+    m_generation = 0;
+    m_completedWorkers = 0;
+  }
+
+  m_cam1Thread = std::thread(&CameraController::cameraWorker, this, 0);
+  m_cam2Thread = std::thread(&CameraController::cameraWorker, this, 1);
+}
+
+void CameraController::stopWorkers()
+{
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_stopWorkers = true;
+  }
+
+  m_workCV.notify_all();
+
+  if (m_cam1Thread.joinable())
+  {
+    m_cam1Thread.join();
+  }
+
+  if (m_cam2Thread.joinable())
+  {
+    m_cam2Thread.join();
+  }
+}
+
+void CameraController::cameraWorker(int cameraIndex)
+{
+  // using Clock = std::chrono::steady_clock;
+
+  // Each worker gets its own camera and image processor
+  Spinnaker::CameraPtr camera = (cameraIndex == 0) ? cam1 : cam2;
+
+  Spinnaker::ImageProcessor processor;
+
+  uint64_t lastGeneration = 0;
+
+  while (true)
+  {
+    // Wait for the next capture request
+    {
+      std::unique_lock<std::mutex> lock(m_mutex);
+
+      m_workCV.wait(lock, [&]()
+                    { return m_stopWorkers || m_generation != lastGeneration; });
+
+      if (m_stopWorkers)
+      {
+        return;
+      }
+
+      lastGeneration = m_generation;
+    }
+
+    Frame &frame = m_workerFrames[cameraIndex];
+
+    // Default frame in case acquisition fails
+    frame.raw = cv::Mat(540, 720, CV_8UC3, cv::Scalar(0, 0, 0));
+
+    frame.cam_ts = 0;
+    frame.program_ts = 0;
+
+    Spinnaker::ImagePtr image;
+
+    try
+    {
+      image = camera->GetNextImage(500);
+
+      if (image->IsIncomplete())
+      {
+        std::cerr << "Image" << cameraIndex + 1
+                  << " Incomplete: "
+                  << Spinnaker::Image::GetImageStatusDescription(
+                         image->GetImageStatus())
+                  << std::endl;
+      }
+      else
+      {
+        // auto convert_start = Clock::now();
+
+        Spinnaker::ImagePtr convertedImage = processor.Convert(image, Spinnaker::PixelFormat_RGB8);
+
+        cv::Mat tmp(
+            convertedImage->GetHeight(),
+            convertedImage->GetWidth(),
+            CV_8UC3,
+            convertedImage->GetData());
+
+        // auto convert_end = Clock::now();
+
+        // Retrieve camera timestamp
+        frame.cam_ts = image->GetChunkData().GetTimestamp();
+
+        // auto program_time = Clock::now();
+
+        // Copy image into independently owned OpenCV memory
+        frame.raw = tmp.clone();
+
+        /*
+        frame.program_ts = std::chrono::duration_cast<std::chrono::nanoseconds>(program_time - m_program_start).count();
+
+        auto copy_end = Clock::now();
+
+        std::cout << "Cam" << cameraIndex + 1
+                  << " | Convert: "
+                  << std::chrono::duration<
+                         double, std::milli>(
+                         convert_end - convert_start).count()
+                  << " ms | Copy: "
+                  << std::chrono::duration<
+                         double, std::milli>(
+                         copy_end - convert_end).count()
+                  << " ms\n";
+                  */
+      }
+    }
+    catch (const Spinnaker::Exception &e)
+    {
+      std::cerr << "Cam" << cameraIndex + 1
+                << " error: " << e.what() << std::endl;
+    }
+    catch (const std::exception &e)
+    {
+      std::cerr << "Cam" << cameraIndex + 1
+                << " error: " << e.what() << std::endl;
+    }
+
+    // Release the image even if conversion throws
+    if (image)
+    {
+      image->Release();
+    }
+
+    // Signal that this worker has completed its capture
+    {
+      std::lock_guard<std::mutex> lock(m_mutex);
+
+      ++m_completedWorkers;
+
+      if (m_completedWorkers == 2)
+        m_doneCV.notify_one();
+    }
+  }
 }
 
 void CameraController::startCameras()
@@ -311,11 +465,22 @@ void CameraController::startCameras()
 
   InitializeCamESP(cam1, kCam1, camList, m_params);
   InitializeCamESP(cam2, kCam2, camList, m_params);
+
+  // Start persistent workers after both cameras begin acquisition
+  if (cam1 && cam2)
+  {
+    startWorkers();
+  }
+  else
+  {
+    throw std::runtime_error("Could not initialize both cameras");
+  }
 }
 
 void CameraController::stopCameras()
 {
   std::cout << "Ending Acquisition" << std::endl;
+  stopWorkers();
   camList.Clear();
   if (cam1 && cam1->IsStreaming())
     cam1->EndAcquisition();
@@ -339,171 +504,40 @@ void CameraController::stopCameras()
 
 std::array<Frame, 2> CameraController::grabFrame()
 {
-    using Clock = std::chrono::steady_clock;
+  // using Clock = std::chrono::steady_clock;
 
-    auto total_start = Clock::now();
+  // auto total_start = Clock::now();
 
-    const int image_width = 720;
-    const int image_height = 540;
+  // Start a new capture cycle
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
 
-    std::array<Frame, 2> frames;
+    m_completedWorkers = 0;
+    ++m_generation;
+  }
 
-    // Initialize default black frames
-    frames[0].raw = cv::Mat(
-        image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
+  // Wake both camera workers
+  m_workCV.notify_all();
 
-    frames[1].raw = cv::Mat(
-        image_height, image_width, CV_8UC3, cv::Scalar(0, 0, 0));
+  // Wait until both cameras finish retrieving and processing
+  {
+    std::unique_lock<std::mutex> lock(m_mutex);
 
-    // Retrieve both cameras in parallel
-    auto retrieve_start = Clock::now();
+    m_doneCV.wait(lock, [this]()
+                  { return m_completedWorkers == 2; });
+  }
 
-    auto cam1_future = std::async(std::launch::async, [this]()
-    {
-        return cam1 ? cam1->GetNextImage(500) : Spinnaker::ImagePtr(nullptr);
-    });
+  /*
+  auto total_end = Clock::now();
 
-    auto cam2_future = std::async(std::launch::async, [this]()
-    {
-        return cam2 ? cam2->GetNextImage(500) : Spinnaker::ImagePtr(nullptr);
-    });
+  double total_ms = std::chrono::duration<double, std::milli>( total_end - total_start).count();
 
-    Spinnaker::ImagePtr cam1frame = cam1_future.get();
-    Spinnaker::ImagePtr cam2frame = cam2_future.get();
+  std::cout << "Total grabFrame: "
+            << total_ms
+            << " ms | Effective FPS: "
+            << 1000.0 / total_ms
+            << "\n";
+  */
 
-    auto retrieve_end = Clock::now();
-
-    double retrieve_ms =
-        std::chrono::duration<double, std::milli>(
-            retrieve_end - retrieve_start).count();
-
-    // Reuse image processor
-    Spinnaker::ImageProcessor processor;
-
-    // Convert and copy Camera 1
-    if (cam1frame)
-    {
-        if (cam1frame->IsIncomplete())
-        {
-            std::cerr << "Image1 Incomplete: "
-                      << Spinnaker::Image::GetImageStatusDescription(
-                             cam1frame->GetImageStatus())
-                      << std::endl;
-        }
-        else
-        {
-            auto convert_start = Clock::now();
-
-            Spinnaker::ImagePtr convertedImage =
-                processor.Convert(cam1frame, Spinnaker::PixelFormat_RGB8);
-
-            cv::Mat tmp(
-                convertedImage->GetHeight(),
-                convertedImage->GetWidth(),
-                CV_8UC3,
-                convertedImage->GetData());
-
-            auto convert_end = Clock::now();
-
-            const Spinnaker::ChunkData& chunkData =
-                cam1frame->GetChunkData();
-
-            frames[0].cam_ts = chunkData.GetTimestamp();
-
-            auto program_time = Clock::now();
-
-            auto program_duration =
-                std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    program_time - m_program_start);
-
-            frames[0].raw = tmp.clone();
-
-            frames[0].program_ts =
-                static_cast<int64_t>(program_duration.count());
-
-            auto copy_end = Clock::now();
-
-            /*
-            std::cout << "Cam1 | Convert: "
-                      << std::chrono::duration<double, std::milli>(
-                             convert_end - convert_start).count()
-                      << " ms | Copy: "
-                      << std::chrono::duration<double, std::milli>(
-                             copy_end - convert_end).count()
-                      << " ms\n";
-            */
-        }
-
-        cam1frame->Release();
-    }
-
-    // Convert and copy Camera 2
-    if (cam2frame)
-    {
-        if (cam2frame->IsIncomplete())
-        {
-            std::cerr << "Image2 Incomplete: "
-                      << Spinnaker::Image::GetImageStatusDescription(
-                             cam2frame->GetImageStatus())
-                      << std::endl;
-        }
-        else
-        {
-            auto convert_start = Clock::now();
-
-            Spinnaker::ImagePtr convertedImage =
-                processor.Convert(cam2frame, Spinnaker::PixelFormat_RGB8);
-
-            cv::Mat tmp(
-                convertedImage->GetHeight(),
-                convertedImage->GetWidth(),
-                CV_8UC3,
-                convertedImage->GetData());
-
-            auto convert_end = Clock::now();
-
-            const Spinnaker::ChunkData& chunkData =
-                cam2frame->GetChunkData();
-
-            frames[1].cam_ts = chunkData.GetTimestamp();
-
-            auto program_time = Clock::now();
-
-            auto program_duration =
-                std::chrono::duration_cast<std::chrono::nanoseconds>(
-                    program_time - m_program_start);
-
-            frames[1].raw = tmp.clone();
-
-            frames[1].program_ts =
-                static_cast<int64_t>(program_duration.count());
-
-            auto copy_end = Clock::now();
-            /*
-            std::cout << "Cam2 | Convert: "
-                      << std::chrono::duration<double, std::milli>(
-                             convert_end - convert_start).count()
-                      << " ms | Copy: "
-                      << std::chrono::duration<double, std::milli>(
-                             copy_end - convert_end).count()
-                      << " ms\n";
-            */
-        }
-
-        cam2frame->Release();
-    }
-
-    auto total_end = Clock::now();
-
-    double total_ms =
-        std::chrono::duration<double, std::milli>(
-            total_end - total_start).count();
-
-    /*
-    std::cout << "Parallel retrieval: " << retrieve_ms
-              << " ms | Total grabFrame: " << total_ms
-              << " ms | Effective FPS: " << 1000.0 / total_ms
-              << "\n";
-    */
-    return frames;
+  return m_workerFrames;
 }

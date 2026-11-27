@@ -2,9 +2,21 @@
 #include "app/MainWindow.h"
 #include <iostream>
 #include "yaml-cpp/yaml.h"
+#include <exception>
 
 int main(int argc, char *argv[])
-{
+{   
+    std::set_terminate([]() {
+        std::cerr << "\n*** std::terminate called ***" << std::endl;
+        if (auto ep = std::current_exception()) {
+            try { std::rethrow_exception(ep); }
+            catch (const cv::Exception &e)  { std::cerr << "cv::Exception: " << e.what() << std::endl; }
+            catch (const std::exception &e) { std::cerr << "std::exception: " << e.what() << std::endl; }
+            catch (...)                     { std::cerr << "unknown exception" << std::endl; }
+        }
+        std::abort();
+    });
+
     std::cout << "Starting Application" << std::endl;
     auto sys = Spinnaker::System::GetInstance();
     auto v = sys->GetLibraryVersion();
