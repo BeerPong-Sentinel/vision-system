@@ -249,42 +249,41 @@ namespace
     }
   }
 
-  // Initialize using software control of camera parameters; kept for testing
-  void InitializeCamPC(Spinnaker::CameraPtr &cam, CameraDetails kCam, const Spinnaker::CameraList &camList, CameraParams config)
-  {
-    cam = camList.GetBySerial(kCam.deviceID);
-
-    if (cam)
-    {
-      cam->Init();
-
-      Spinnaker::GenApi::INodeMap &sNodeMap = cam->GetTLStreamNodeMap();
-      Spinnaker::GenApi::INodeMap &nodeMap = cam->GetNodeMap();
-      ConfigureChunkData(nodeMap);
-      Spinnaker::GenApi::CEnumerationPtr ptrHandlingMode = sNodeMap.GetNode("StreamBufferHandlingMode");
-      if (IsAvailable(ptrHandlingMode) && IsWritable(ptrHandlingMode))
-      {
-        Spinnaker::GenApi::CEnumEntryPtr ptrHandlingModeEntry = ptrHandlingMode->GetEntryByName("NewestOnly");
-        if (IsAvailable(ptrHandlingModeEntry) && IsReadable(ptrHandlingModeEntry))
-        {
-          ptrHandlingMode->SetIntValue(ptrHandlingModeEntry->GetValue());
-        }
-      }
-
-      ConfigureCameraControlsPC(nodeMap, config);
-
-      cam->BeginAcquisition();
-
-      std::cout << "Successfully Initialized" << kCam.name << std::endl;
-    }
-    else
-    {
-      std::cout << "Could Not Connect to " << kCam.name << std::endl;
-    }
-  }
 }
 
+// Initialize using software control of camera parameters; kept for testing
+void InitializeCamPC(Spinnaker::CameraPtr &cam, CameraDetails kCam, const Spinnaker::CameraList &camList, CameraParams config)
+{
+  cam = camList.GetBySerial(kCam.deviceID);
 
+  if (cam)
+  {
+    cam->Init();
+
+    Spinnaker::GenApi::INodeMap &sNodeMap = cam->GetTLStreamNodeMap();
+    Spinnaker::GenApi::INodeMap &nodeMap = cam->GetNodeMap();
+    ConfigureChunkData(nodeMap);
+    Spinnaker::GenApi::CEnumerationPtr ptrHandlingMode = sNodeMap.GetNode("StreamBufferHandlingMode");
+    if (IsAvailable(ptrHandlingMode) && IsWritable(ptrHandlingMode))
+    {
+      Spinnaker::GenApi::CEnumEntryPtr ptrHandlingModeEntry = ptrHandlingMode->GetEntryByName("NewestOnly");
+      if (IsAvailable(ptrHandlingModeEntry) && IsReadable(ptrHandlingModeEntry))
+      {
+        ptrHandlingMode->SetIntValue(ptrHandlingModeEntry->GetValue());
+      }
+    }
+
+    ConfigureCameraControlsPC(nodeMap, config);
+
+    cam->BeginAcquisition();
+
+    std::cout << "Successfully Initialized" << kCam.name << std::endl;
+  }
+  else
+  {
+    std::cout << "Could Not Connect to " << kCam.name << std::endl;
+  }
+}
 
 CameraController::CameraController(CameraParams params) : m_params(params)
 {
@@ -329,12 +328,17 @@ void CameraController::stopWorkers()
 
 void CameraController::cameraWorker(int cameraIndex)
 {
-  // using Clock = std::chrono::steady_clock;
+  //using Clock = std::chrono::steady_clock;
 
   // Each worker gets its own camera and image processor
   Spinnaker::CameraPtr camera = (cameraIndex == 0) ? cam1 : cam2;
 
   Spinnaker::ImageProcessor processor;
+
+  // Fastest demosaic; slightly lower colour quality at edges, which does
+  // not matter for thresholding. Check the enum name in your SDK headers.
+  processor.SetColorProcessing(
+      Spinnaker::SPINNAKER_COLOR_PROCESSING_ALGORITHM_NEAREST_NEIGHBOR);
 
   uint64_t lastGeneration = 0;
 
@@ -357,11 +361,10 @@ void CameraController::cameraWorker(int cameraIndex)
 
     Frame &frame = m_workerFrames[cameraIndex];
 
-    // Default frame in case acquisition fails
-    frame.raw = cv::Mat(540, 720, CV_8UC3, cv::Scalar(0, 0, 0));
-
     frame.cam_ts = 0;
     frame.program_ts = 0;
+
+    bool gotImage = false;
 
     Spinnaker::ImagePtr image;
 
@@ -379,8 +382,6 @@ void CameraController::cameraWorker(int cameraIndex)
       }
       else
       {
-        // auto convert_start = Clock::now();
-
         Spinnaker::ImagePtr convertedImage = processor.Convert(image, Spinnaker::PixelFormat_RGB8);
 
         cv::Mat tmp(
@@ -389,32 +390,13 @@ void CameraController::cameraWorker(int cameraIndex)
             CV_8UC3,
             convertedImage->GetData());
 
-        // auto convert_end = Clock::now();
-
         // Retrieve camera timestamp
         frame.cam_ts = image->GetChunkData().GetTimestamp();
-
-        // auto program_time = Clock::now();
 
         // Copy image into independently owned OpenCV memory
         frame.raw = tmp.clone();
 
-        /*
-        frame.program_ts = std::chrono::duration_cast<std::chrono::nanoseconds>(program_time - m_program_start).count();
-
-        auto copy_end = Clock::now();
-
-        std::cout << "Cam" << cameraIndex + 1
-                  << " | Convert: "
-                  << std::chrono::duration<
-                         double, std::milli>(
-                         convert_end - convert_start).count()
-                  << " ms | Copy: "
-                  << std::chrono::duration<
-                         double, std::milli>(
-                         copy_end - convert_end).count()
-                  << " ms\n";
-                  */
+        gotImage = true;
       }
     }
     catch (const Spinnaker::Exception &e)
@@ -426,6 +408,12 @@ void CameraController::cameraWorker(int cameraIndex)
     {
       std::cerr << "Cam" << cameraIndex + 1
                 << " error: " << e.what() << std::endl;
+    }
+
+    // Only build the black fallback frame when acquisition failed
+    if (!gotImage)
+    {
+      frame.raw = cv::Mat(540, 720, CV_8UC3, cv::Scalar(0, 0, 0));
     }
 
     // Release the image even if conversion throws
@@ -504,9 +492,8 @@ void CameraController::stopCameras()
 
 std::array<Frame, 2> CameraController::grabFrame()
 {
-  // using Clock = std::chrono::steady_clock;
-
-  // auto total_start = Clock::now();
+  //using Clock = std::chrono::steady_clock;
+  //auto total_start = Clock::now();
 
   // Start a new capture cycle
   {
@@ -532,12 +519,13 @@ std::array<Frame, 2> CameraController::grabFrame()
 
   double total_ms = std::chrono::duration<double, std::milli>( total_end - total_start).count();
 
+  
   std::cout << "Total grabFrame: "
             << total_ms
             << " ms | Effective FPS: "
             << 1000.0 / total_ms
             << "\n";
-  */
-
+  
+*/
   return m_workerFrames;
 }

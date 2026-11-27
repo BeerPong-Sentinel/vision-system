@@ -19,12 +19,10 @@ class PipelineWorker : public QObject
     Q_OBJECT
 
 public:
-    explicit PipelineWorker(QObject* parent = nullptr,
-                            ConfigData* params = {})
-        : QObject(parent),
-          m_hsvParams(params->hsv),
-          m_cams(params->cam)
-    {}
+explicit PipelineWorker(QObject *parent = nullptr, ConfigData *params = {})
+    : QObject(parent),
+      m_cams(params->cam),
+      m_hsvParams(params->hsv) {}
 
 public slots:
     void startCapture();
@@ -38,6 +36,9 @@ private:
     void stopProcessingWorkers();
     void processingWorker(int cameraIndex);
     void stopCapture();
+
+    std::array<double, 2> m_thresholdMs{};
+    std::array<double, 2> m_detectMs{};
 
     // Camera controller
     CameraController m_cams;

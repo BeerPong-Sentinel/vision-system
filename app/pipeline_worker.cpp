@@ -2,6 +2,7 @@
 
 #include <opencv2/opencv.hpp>
 
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -66,7 +67,8 @@ void PipelineWorker::processingWorker(int cameraIndex)
   {
     std::cout << "Worker " << cameraIndex << ": loading stereo data" << std::endl;
 
-    processor = std::make_unique<ImageProcessor>("core/stereo_data.npz", hsvParams);
+    processor = std::make_unique<ImageProcessor>(
+        "core/stereo_data.npz", hsvParams);
 
     std::cout << "Worker " << cameraIndex << ": ready" << std::endl;
   }
@@ -117,9 +119,15 @@ void PipelineWorker::processingWorker(int cameraIndex)
 
       if (processor && !processedFrame.raw.empty())
       {
+        using Clock = std::chrono::steady_clock;
+
         // HSV thresholding
+        auto thresh_start = Clock::now();
+
         processedFrame.thresh =
             processor->hsvThreshold(processedFrame.raw);
+
+        auto thresh_end = Clock::now();
 
         // Ball detection
         processor->detectBall(
@@ -129,6 +137,18 @@ void PipelineWorker::processingWorker(int cameraIndex)
             processedFrame.ballCenter,
             processedFrame.ballRadius,
             processedFrame.annotated);
+
+        auto detect_end = Clock::now();
+
+        m_thresholdMs[cameraIndex] =
+            std::chrono::duration<double, std::milli>(
+                thresh_end - thresh_start)
+                .count();
+
+        m_detectMs[cameraIndex] =
+            std::chrono::duration<double, std::milli>(
+                detect_end - thresh_end)
+                .count();
       }
     }
     catch (const std::exception &e)
@@ -204,17 +224,6 @@ void PipelineWorker::startCapture()
   long i = 0;
 
   constexpr int GUI_REFRESH_WAIT = 20;
-  constexpr int FPS_MEASURE_FRAMES = 20;
-
-  // Camera FPS measurement
-  uint64_t fps_start_ts = 0;
-  int fps_frame_count = 0;
-
-  // Pipeline timing measurement
-  double pipeline_elapsed_ms = 0.0;
-  double grab_elapsed_ms = 0.0;
-
-  int pipeline_frame_count = 0;
 
   while (!QThread::currentThread()->isInterruptionRequested())
   {
@@ -279,78 +288,23 @@ void PipelineWorker::startCapture()
             .count();
 
     // ----------------------------------------
-    // Camera FPS measurement
-    // ----------------------------------------
-
-    uint64_t current_ts = m_processedFrames[0].cam_ts;
-
-    if (current_ts != 0)
-    {
-      if (fps_frame_count == 0)
-      {
-        fps_start_ts = current_ts;
-        fps_frame_count = 1;
-      }
-      else
-      {
-        ++fps_frame_count;
-
-        if (fps_frame_count >= FPS_MEASURE_FRAMES)
-        {
-          uint64_t elapsed_ns = current_ts - fps_start_ts;
-
-          if (elapsed_ns > 0)
-          {
-            double camera_fps =
-                (fps_frame_count - 1) * 1e9 / elapsed_ns;
-
-            std::cout << "Camera FPS: "
-                      << camera_fps << "\n";
-          }
-
-          fps_frame_count = 0;
-        }
-      }
-    }
-
-    // ----------------------------------------
-    // Pipeline performance measurement
-    // ----------------------------------------
-
-    pipeline_elapsed_ms += loop_ms;
-    grab_elapsed_ms += grab_ms;
-
-    ++pipeline_frame_count;
-
-    if (pipeline_frame_count >= FPS_MEASURE_FRAMES)
-    {
-      double average_loop_ms =
-          pipeline_elapsed_ms / pipeline_frame_count;
-
-      double average_grab_ms =
-          grab_elapsed_ms / pipeline_frame_count;
-
-      double pipeline_fps =
-          1000.0 / average_loop_ms;
-
-      std::cout << "Average grab: "
-                << average_grab_ms << " ms | "
-                << "Average pipeline: "
-                << average_loop_ms << " ms | "
-                << "Pipeline FPS: "
-                << pipeline_fps << "\n";
-
-      pipeline_elapsed_ms = 0.0;
-      grab_elapsed_ms = 0.0;
-      pipeline_frame_count = 0;
-    }
-
-    // ----------------------------------------
     // GUI refresh
     // ----------------------------------------
 
     if (i % GUI_REFRESH_WAIT == 0)
     {
+      // The loop waits for the slower camera, so report the slower
+      // of the two workers for each stage.
+      double threshold_ms = std::max(m_thresholdMs[0], m_thresholdMs[1]);
+      double detect_ms = std::max(m_detectMs[0], m_detectMs[1]);
+      double fps = (loop_ms > 0.0) ? 1000.0 / loop_ms : 0.0;
+
+      std::cout << "Grab: " << grab_ms << " ms | "
+                << "Threshold: " << threshold_ms << " ms | "
+                << "BallDetect: " << detect_ms << " ms | "
+                << "Total: " << loop_ms << " ms | "
+                << "FPS: " << fps << "\n";
+
       emit newFrame(
           m_processedFrames[0],
           m_processedFrames[1]);
